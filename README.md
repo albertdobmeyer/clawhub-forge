@@ -1,4 +1,4 @@
-# moltbook-app
+# openclaw-sandbox
 
 Twenty-four agent skills published to [ClawdHub](https://clawdhub.com), targeting infrastructure categories that the registry's gold rush phase left empty — plus meta-skills for the ecosystem and an emergency rescue kit for when everything goes wrong. Built through systematic ecosystem analysis, not guesswork.
 
@@ -72,7 +72,7 @@ Full analysis in [docs/journey.md](docs/journey.md).
 ## Project Structure
 
 ```
-moltbook-app/
+openclaw-sandbox/
   skills/                           # Published skill bundles + one installed sample
     coding-agent/SKILL.md           # (installed from registry during research — not ours)
     docker-sandbox/SKILL.md
