@@ -8,4 +8,4 @@
 #   - Vault compose stack auto-started
 
 Write-Host "[Phase 2] Hyper-V VM creation — not yet implemented."
-Write-Host "Use Phase 1 (container-only) for now: .\openclaw-vault\scripts\setup.ps1"
+Write-Host "Use Phase 1 (container-only) for now: .\scripts\setup.ps1"

@@ -7,4 +7,4 @@
 #   3. Unregister the distro
 
 Write-Host "[Phase 2] WSL2 teardown — not yet implemented."
-Write-Host "Use kill switch for now: .\openclaw-vault\scripts\kill.ps1 -Mode nuclear"
+Write-Host "Use kill switch for now: .\scripts\kill.ps1 -Mode nuclear"

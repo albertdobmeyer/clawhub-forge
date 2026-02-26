@@ -1,9 +1,10 @@
 # openclaw-VAULT: One-command setup (Windows PowerShell)
-# Usage: .\openclaw-vault\scripts\setup.ps1
+# Usage: .\scripts\setup.ps1
 
 $ErrorActionPreference = "Stop"
 $VaultDir = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$VaultDir = Join-Path $VaultDir "openclaw-vault"
+# When run from repo root, $PSScriptRoot is scripts/, parent is repo root
+$VaultDir = Split-Path -Parent $PSScriptRoot
 $EnvFile = Join-Path $VaultDir ".env"
 
 Write-Host @"
@@ -120,7 +121,7 @@ Write-Host @"
 |------------------------------------------------------|
 |  Attach: $Runtime exec -it openclaw-vault sh          |
 |  Logs:   $Runtime compose logs -f                     |
-|  Stop:   .\openclaw-vault\scripts\kill.ps1 -Mode soft |
-|  Nuke:   .\openclaw-vault\scripts\kill.ps1 -Mode hard|
+|  Stop:   .\scripts\kill.ps1 -Mode soft                |
+|  Nuke:   .\scripts\kill.ps1 -Mode hard               |
 +======================================================+
 "@

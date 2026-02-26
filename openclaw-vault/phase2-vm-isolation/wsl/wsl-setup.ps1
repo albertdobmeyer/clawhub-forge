@@ -9,4 +9,4 @@
 #   5. Disable automount and interop
 
 Write-Host "[Phase 2] WSL2 dedicated distro setup — not yet implemented."
-Write-Host "Use Phase 1 (container-only) for now: .\openclaw-vault\scripts\setup.ps1"
+Write-Host "Use Phase 1 (container-only) for now: .\scripts\setup.ps1"

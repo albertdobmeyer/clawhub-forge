@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # openclaw-VAULT: One-command setup (Linux/macOS)
-# Usage: bash openclaw-vault/scripts/setup.sh
+# Usage: bash scripts/setup.sh
 
 set -euo pipefail
 
@@ -103,6 +103,6 @@ echo "║                    VAULT IS READY                    ║"
 echo "╠══════════════════════════════════════════════════════╣"
 echo "║  Attach: $RUNTIME exec -it openclaw-vault sh        ║"
 echo "║  Logs:   $COMPOSE logs -f                           ║"
-echo "║  Stop:   bash openclaw-vault/scripts/kill.sh --soft  ║"
-echo "║  Nuke:   bash openclaw-vault/scripts/kill.sh --hard ║"
+echo "║  Stop:   bash scripts/kill.sh --soft                 ║"
+echo "║  Nuke:   bash scripts/kill.sh --hard                ║"
 echo "╚══════════════════════════════════════════════════════╝"

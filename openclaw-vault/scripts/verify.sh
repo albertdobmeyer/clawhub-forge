@@ -4,7 +4,7 @@
 # Runs inside the openclaw-vault container to validate all security controls.
 # Can also be run from the host (it will exec into the container).
 #
-# Usage: bash openclaw-vault/scripts/verify.sh
+# Usage: bash scripts/verify.sh
 
 set -uo pipefail
 
@@ -55,7 +55,7 @@ echo ""
 # Check container is running
 if ! $RUNTIME inspect "$CONTAINER" &>/dev/null; then
     echo "[!] Container '$CONTAINER' is not running."
-    echo "    Start it first: cd openclaw-vault && $RUNTIME compose up -d"
+    echo "    Start it first: $RUNTIME compose up -d"
     exit 1
 fi
 

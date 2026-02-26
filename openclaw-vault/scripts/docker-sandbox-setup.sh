@@ -5,7 +5,7 @@
 # Simpler than Path A but the API key IS passed as an env var
 # (Docker sandbox doesn't support proxy-side injection).
 #
-# Usage: bash openclaw-vault/scripts/docker-sandbox-setup.sh
+# Usage: bash scripts/docker-sandbox-setup.sh
 
 set -euo pipefail
 

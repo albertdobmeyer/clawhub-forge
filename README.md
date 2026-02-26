@@ -1,38 +1,22 @@
-# openclaw-sandbox
+# openclaw-research
 
-Security research, ecosystem exploration, and hardened infrastructure for [OpenClaw](https://github.com/anthropics/openclaw) — the 200k-star agentic workstation platform.
+Security research, ecosystem exploration, and contributions to [OpenClaw](https://github.com/anthropics/openclaw) — the 200k-star agentic workstation platform.
 
-This repo documents what we found, what we built, and how to run OpenClaw without handing it your API keys and unrestricted network access.
+This repo documents what I found exploring OpenClaw and Moltbook: the threat landscape, the supply chain attacks, the architectural patterns, and 24 published skills built to fill gaps in the ecosystem. It's a research portfolio, shared for knowledge.
 
 **Author**: [@gitgoodordietrying](https://github.com/gitgoodordietrying)
 
 ---
 
-## openclaw-VAULT
+## Looking to run OpenClaw securely?
 
-The headline deliverable: a defense-in-depth container sandbox where **your API key never enters the container**. A proxy sidecar injects it at the network layer. Even with full container compromise, the key can't be read. No other hardening guide does this.
+The hardened containment framework that emerged from this research is its own project:
 
-**[Full README and setup instructions →](openclaw-vault/README.md)**
-
-```
-HOST
-├── Hardened Container (read-only · caps dropped · seccomp · non-root)
-│     ↓ internal network only
-├── mitmproxy sidecar (key injection · domain allowlist · logging)
-└── Kill Switch (--soft · --hard · --nuclear)
-```
-
-Quick start:
-```bash
-bash openclaw-vault/scripts/setup.sh        # Linux / macOS
-.\openclaw-vault\scripts\setup.ps1          # Windows PowerShell
-```
+**[openclaw-vault](https://github.com/gitgoodordietrying/openclaw-vault)** — defense-in-depth sandbox with proxy-side API key injection, domain allowlisting, and a kill switch. Your API key never enters the container.
 
 ---
 
 ## Research & Analysis
-
-This started as ecosystem exploration. The security findings made the VAULT necessary.
 
 | Document | Contents |
 |----------|----------|
@@ -46,6 +30,8 @@ This started as ecosystem exploration. The security findings made the VAULT nece
 ## Published Skills (24)
 
 Twenty-four agent skills published to [ClawdHub](https://clawdhub.com), targeting infrastructure categories the registry's gold rush left empty — plus meta-skills for the ecosystem and an emergency rescue kit.
+
+During ecosystem exploration, a trojanized skill (`moltbook-ay`) was discovered in the registry containing instructions to download and execute malware via password-protected archives. Full incident documentation is in the [journey](docs/journey.md).
 
 ### Batch 1 — Gap-Fill (built in Docker sandbox)
 
@@ -101,17 +87,7 @@ Twenty-four agent skills published to [ClawdHub](https://clawdhub.com), targetin
 ## Project Structure
 
 ```
-openclaw-sandbox/
-├── openclaw-vault/                   # Hardened containment framework
-│   ├── Containerfile                 #   Multi-stage hardened image
-│   ├── compose.yml                   #   Container + mitmproxy orchestration
-│   ├── vault-seccomp.json            #   Custom syscall filter
-│   ├── proxy/                        #   Key injection + domain allowlist
-│   ├── config/                       #   Hardened OpenClaw gateway config
-│   ├── scripts/                      #   Setup, kill switch, verification
-│   ├── tests/                        #   Isolation verification tests
-│   ├── phase2-vm-isolation/          #   [Planned] WSL2/Hyper-V layer
-│   └── monitoring/                   #   [Planned] Skill scanner, log parser
+openclaw-research/
 ├── docs/
 │   ├── security-report.md            # Security analysis compilation
 │   ├── airgapped-sandbox.md          # Safe participation guide
@@ -127,6 +103,8 @@ openclaw-sandbox/
 └── .devcontainer/
     └── devcontainer.json             # Devcontainer config (telemetry disabled)
 ```
+
+The hardened containment framework lives in its own repo: [openclaw-vault](https://github.com/gitgoodordietrying/openclaw-vault)
 
 ## How Skills Work
 
@@ -149,4 +127,4 @@ Install any skill with `molthub install <slug>`. Skills are placed in `./skills/
 
 ## License
 
-Skills are published to ClawdHub under its registry terms. The openclaw-VAULT is MIT licensed. Source files in this repo are available for reference.
+Skills are published to ClawdHub under its registry terms. Source files in this repo are available for reference.

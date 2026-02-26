@@ -35,9 +35,9 @@ This isn't theoretical. All of this happened in one week (Jan 28 – Feb 3, 2026
 | **Database breach** | 1.5M API tokens, 35K emails exposed — Supabase RLS was disabled entirely |
 | **21,639 instances exposed** | On the public internet, most with no authentication |
 
-Every other hardening guide — Willison's, DigitalOcean's, AIMaker's, Adversa AI's — puts the API key inside the container as an environment variable. A compromised process reads it from `/proc/self/environ`. The openclaw-VAULT solves this with proxy-side injection: the container talks to `http://vault-proxy:8080`, the proxy checks the domain allowlist, injects the auth header, and forwards. The container never sees the key.
+Every other hardening guide puts the API key inside the container as an environment variable. A compromised process reads it from `/proc/self/environ`. The openclaw-VAULT solves this with proxy-side injection: the container talks to `http://vault-proxy:8080`, the proxy checks the domain allowlist, injects the auth header, and forwards. The container never sees the key.
 
-Full analysis: [`docs/security-report.md`](../docs/security-report.md)
+For a deep dive into the threat landscape, see the [Security Analysis Compilation](https://github.com/gitgoodordietrying/openclaw-research/blob/main/docs/security-report.md) in the companion research repository.
 
 ---
 
@@ -80,7 +80,7 @@ The openclaw-VAULT is the best container-level isolation available for OpenClaw.
 
 Run the openclaw-VAULT on a $6/month DigitalOcean, Hetzner, or Linode droplet. Separate kernel, separate network, zero relationship to your personal infrastructure. If compromised, the attacker is on a disposable VM with nothing on it. They can't reach your home network, your other machines, or anything real. Destroy and rebuild in minutes.
 
-**Choose this if:** you take the threat landscape seriously, plan to run agents unattended, or want true infrastructure isolation. This is what our own research methodology uses.
+**Choose this if:** you take the threat landscape seriously, plan to run agents unattended, or want true infrastructure isolation.
 
 ### Tier 2: Local VM — strong
 
@@ -109,10 +109,10 @@ No. An empty drive doesn't give you kernel isolation, which is the actual securi
 ### Path A: Podman/Docker + mitmproxy (recommended)
 
 ```bash
-git clone https://github.com/yourusername/openclaw-sandbox.git
-cd openclaw-sandbox
-bash openclaw-vault/scripts/setup.sh        # Linux / macOS
-.\openclaw-vault\scripts\setup.ps1          # Windows PowerShell
+git clone https://github.com/gitgoodordietrying/openclaw-vault.git
+cd openclaw-vault
+bash scripts/setup.sh        # Linux / macOS
+.\scripts\setup.ps1          # Windows PowerShell
 ```
 
 Detects your runtime, prompts for your API key, builds the hardened image, starts the stack, runs 10 security checks. Five minutes.
@@ -120,7 +120,7 @@ Detects your runtime, prompts for your API key, builds the hardened image, start
 ### Path B: Docker Desktop Sandbox Plugin (simpler, weaker)
 
 ```bash
-bash openclaw-vault/scripts/docker-sandbox-setup.sh
+bash scripts/docker-sandbox-setup.sh
 ```
 
 Fewer moving parts if you're on Docker Desktop 4.49+. Trade-off: the API key lives inside the container as an env var. Documented as weaker than Path A.
@@ -149,7 +149,7 @@ podman exec vault-proxy cat /var/log/vault-proxy/requests.jsonl
 podman compose logs -f
 
 # Re-run the 10-point security check
-bash openclaw-vault/scripts/verify.sh
+bash scripts/verify.sh
 ```
 
 ### Data in and out
@@ -169,9 +169,9 @@ The agent also sends you results directly via Telegram — that's the normal flo
 ### Stop
 
 ```bash
-bash openclaw-vault/scripts/kill.sh --soft     # stop, preserve workspace for review
-bash openclaw-vault/scripts/kill.sh --hard     # remove containers, volumes, networks
-bash openclaw-vault/scripts/kill.sh --nuclear  # terminate WSL distro / VM (Phase 2)
+bash scripts/kill.sh --soft     # stop, preserve workspace for review
+bash scripts/kill.sh --hard     # remove containers, volumes, networks
+bash scripts/kill.sh --nuclear  # terminate WSL distro / VM (Phase 2)
 ```
 
 ---
@@ -179,7 +179,7 @@ bash openclaw-vault/scripts/kill.sh --nuclear  # terminate WSL distro / VM (Phas
 ## Verification
 
 ```bash
-bash openclaw-vault/scripts/verify.sh
+bash scripts/verify.sh
 ```
 
 | # | Check | What it proves |
@@ -199,7 +199,7 @@ bash openclaw-vault/scripts/verify.sh
 
 ## Domain Allowlist
 
-Edit `openclaw-vault/proxy/allowlist.txt`. One domain per line. Subdomains included automatically.
+Edit `proxy/allowlist.txt`. One domain per line. Subdomains included automatically.
 
 ```bash
 podman compose restart vault-proxy   # reload after editing
@@ -267,13 +267,11 @@ openclaw-vault/
 
 ## Background
 
-This started as security research, not a container project. Understanding OpenClaw's architecture, mapping its threat landscape, and documenting the incidents that make it dangerous to run uncontained — the research informed the design:
+This started as security research, not a container project. Understanding OpenClaw's architecture, mapping its threat landscape, and documenting the incidents that make it dangerous to run uncontained — the research informed the design.
 
-- [Security Analysis Compilation](../docs/security-report.md) — incident timeline, vulnerability analysis, architectural lessons
-- [Safe Participation Guide](../docs/airgapped-sandbox.md) — operational security, hardening config, research methodology
-- [24 published skills](../skills/) — built during hands-on platform exploration
+The companion research repository documents the full journey:
 
-*These links point to the parent [openclaw-sandbox](../) research repository.*
+- [openclaw-research](https://github.com/gitgoodordietrying/openclaw-research) — security analysis, threat modeling, ecosystem exploration, and 24 published ClawHub skills
 
 The openclaw-VAULT is the infrastructure that emerged from understanding the problem space first.
 

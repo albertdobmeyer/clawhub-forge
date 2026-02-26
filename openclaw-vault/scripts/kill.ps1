@@ -1,5 +1,5 @@
 # openclaw-VAULT: Kill Switch (Windows PowerShell)
-# Usage: .\openclaw-vault\scripts\kill.ps1 -Mode soft|hard|nuclear
+# Usage: .\scripts\kill.ps1 -Mode soft|hard|nuclear
 
 param(
     [Parameter(Mandatory=$true)]
@@ -9,7 +9,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 $VaultDir = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
-$VaultDir = Join-Path $VaultDir "openclaw-vault"
+$VaultDir = Split-Path -Parent $PSScriptRoot
 
 # Detect runtime
 $Runtime = if (Get-Command podman -ErrorAction SilentlyContinue) { "podman" } else { "docker" }

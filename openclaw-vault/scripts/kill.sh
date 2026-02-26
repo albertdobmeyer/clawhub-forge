@@ -6,7 +6,7 @@
 #   --hard    Kill + remove containers + prune network
 #   --nuclear Terminate WSL distro or Hyper-V VM (Phase 2)
 #
-# Usage: bash openclaw-vault/scripts/kill.sh --soft|--hard|--nuclear
+# Usage: bash scripts/kill.sh --soft|--hard|--nuclear
 
 set -euo pipefail
 

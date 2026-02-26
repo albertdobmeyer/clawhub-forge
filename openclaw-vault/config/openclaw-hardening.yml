@@ -6,7 +6,7 @@
 # ██████████████████████████████████████████████████████████████████████
 #
 # This config locks down OpenClaw to research-safe defaults.
-# Adapted from docs/airgapped-sandbox.md in the openclaw-sandbox repo.
+# Adapted from the openclaw-research companion repo's safe participation guide.
 
 # --- Sandbox isolation ---
 sandbox:
