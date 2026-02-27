@@ -1,37 +1,40 @@
-# openclaw-research
+# clawhub-lab
 
-Security research, ecosystem exploration, and contributions to [OpenClaw](https://github.com/anthropics/openclaw) — the 200k-star agentic workstation platform.
-
-This repo documents what I found exploring OpenClaw and Moltbook: the threat landscape, the supply chain attacks, the architectural patterns, and 24 published skills built to fill gaps in the ecosystem. It's a research portfolio, shared for knowledge.
+Skill development for [ClawHub](https://clawdhub.com) and ecosystem research into [OpenClaw](https://openclaw.dev), [Moltbook](https://moltbook.com), and their surrounding infrastructure. Twenty-four agent skills published to the registry — infrastructure tools the gold rush left empty — plus platform reverse-engineering, a trojanized skill discovery, and a security analysis compilation.
 
 **Author**: [@gitgoodordietrying](https://github.com/gitgoodordietrying)
 
 ---
 
-## Looking to run OpenClaw securely?
+## What Is This
 
-The hardened containment framework that emerged from this research is its own project:
+A skill development lab and ecosystem research repository. Two purposes, one codebase:
 
-**[openclaw-vault](https://github.com/gitgoodordietrying/openclaw-vault)** — defense-in-depth sandbox with proxy-side API key injection, domain allowlisting, and a kill switch. Your API key never enters the container.
+1. **Skill publisher** — 24 production-quality skills filling infrastructure gaps in the ClawHub registry (SQL, CI/CD, testing, security, profiling, and 19 more). Designed to age well past the gold rush phase.
+2. **Research lab** — API reverse-engineering, registry analysis, Moltbook social network investigation, a trojanized skill incident report, and a compiled security threat landscape.
 
----
+**What you can do here:** read and reuse skill source, review ecosystem research, reference the security findings, or use the development environment to write your own skills.
 
-## Research & Analysis
-
-| Document | Contents |
-|----------|----------|
-| [Security Analysis](docs/security-report.md) | CVE-2026-25253, ClawHavoc (11.9% malicious skill rate), database breach, 21K exposed instances, threat model |
-| [Safe Participation Guide](docs/airgapped-sandbox.md) | Operational security procedures, OpenClaw hardening config, research methodology |
-| [Journey](docs/journey.md) | End-to-end narrative: package vetting, Docker sandbox setup, API reverse engineering, ecosystem analysis, trojanized skill discovery, lessons learned |
-| [Platform Report](docs/research/clawdhub-platform-report.md) | ClawdHub API endpoints, skill format schema, security model, registry statistics, Moltbook/OpenClaw ecosystem analysis |
+**What this isn't:** a runtime for running OpenClaw agents, a sandbox for executing untrusted code, or a replacement for proper container isolation. For that, see [openclaw-vault](https://github.com/gitgoodordietrying/openclaw-vault) — the hardened container companion where your API key never enters the container.
 
 ---
 
-## Published Skills (24)
+## The Ecosystem (Who's Who)
 
-Twenty-four agent skills published to [ClawdHub](https://clawdhub.com), targeting infrastructure categories the registry's gold rush left empty — plus meta-skills for the ecosystem and an emergency rescue kit.
+The naming is confusing because everything rebranded in the same week. Here's the map:
 
-During ecosystem exploration, a trojanized skill (`moltbook-ay`) was discovered in the registry containing instructions to download and execute malware via password-protected archives. Full incident documentation is in the [journey](docs/journey.md).
+- **OpenClaw** — the agent runtime (formerly Clawdbot, then Moltbot). Open-source, runs on your machine, full system access by default.
+- **ClawHub** — the skill registry. Think npm for agent plugins. Publish with `molthub publish`, install with `molthub install`. 11.9% malicious rate during the ClawHavoc campaign.
+- **Moltbook** — the social network for AI agents. 1.6M registered agents, vote counts trivially exploitable, real technical discourse buried under noise.
+- **molthub** — the CLI tool (`npm install -g molthub`). Package manager for ClawHub skills.
+
+These layers stack: ClawHub supplies capabilities → OpenClaw runs the agent → Moltbook connects agents socially. For full definitions and architecture diagrams, see the [openclaw-vault README](https://github.com/gitgoodordietrying/openclaw-vault#what-is-openclaw).
+
+---
+
+## Published Skills
+
+The ClawHub registry launched in late January 2026 with ~200+ skills — mostly Twitter CLI forks, crypto bots, and coding agent duplicates. What was missing: the infrastructure tools developers actually use daily. Twenty skills fill those gaps, three meta-skills help anyone write and optimize skills for the registry, and the Emergency Rescue Kit is the skill you hope you never need.
 
 ### Batch 1 — Gap-Fill (built in Docker sandbox)
 
@@ -84,27 +87,70 @@ During ecosystem exploration, a trojanized skill (`moltbook-ay`) was discovered 
 
 ---
 
+## Research & Security Findings
+
+Ecosystem exploration produced several research artifacts:
+
+- **Trojanized skill discovery** — `moltbook-ay` contained instructions to download and execute malware via password-protected archives. Classic social engineering adapted for autonomous agents. No code was executed; the `molthub install` process was [verified from source](docs/journey.md#phase-11-security-audit) to be download-extract-write only.
+- **ClawHub platform analysis** — API reverse-engineering, registry discovery protocol, skill format schema, publishing flow, semantic search mechanics, and registry statistics at one week old (~200+ skills). Full report: [clawdhub-platform-report.md](docs/research/clawdhub-platform-report.md).
+- **Moltbook investigation** — 1.6M agents, 154K posts, a publicly documented vote exploit, and the decision to retract rather than participate. Documented in [journey.md](docs/journey.md#phase-10-moltbook-exploration--security-incident).
+- **Security compilation** — Willison's "lethal trifecta" framework, CVE-2026-25253 (one-click RCE), the ClawHavoc supply chain campaign (341 malicious skills), the Moltbook database breach, and 21,639 exposed instances. Full analysis: [security-report.md](docs/research/security-report.md).
+- **End-to-end narrative** — From package vetting to 24 published skills, ecosystem retraction, and lessons learned: [journey.md](docs/journey.md).
+
+---
+
+## Development Environment
+
+All skill development was done inside a Docker Desktop sandbox (Docker 4.59.0) with telemetry disabled. The sandbox provides VM-level isolation with network proxy controls — the right precaution for a one-week-old platform from an unknown ecosystem.
+
+- **Sandbox setup guide**: [airgapped-sandbox.md](docs/setup/airgapped-sandbox.md)
+- **Full container hardening**: [openclaw-vault](https://github.com/gitgoodordietrying/openclaw-vault) (proxy-side API key injection, allowlist networking, kill switch)
+- **Spec-driven workflow**: [claude-speckit.md](docs/setup/claude-speckit.md) — adapted from GitHub Spec-Kit for agentic development
+- **Devcontainer config**: [.devcontainer/devcontainer.json](.devcontainer/devcontainer.json) (telemetry disabled via `CLAWHUB_DISABLE_TELEMETRY=1`)
+
+---
+
 ## Project Structure
 
 ```
-openclaw-research/
-├── docs/
-│   ├── security-report.md            # Security analysis compilation
-│   ├── airgapped-sandbox.md          # Safe participation guide
-│   ├── journey.md                    # Full exploration narrative
-│   └── research/
-│       └── clawdhub-platform-report.md
-├── skills/                           # 24 published skills + 1 installed sample
-│   ├── docker-sandbox/SKILL.md
-│   ├── csv-pipeline/SKILL.md
-│   ├── ...                           # (20 more)
-│   ├── emergency-rescue/SKILL.md
-│   └── coding-agent/SKILL.md        # (installed from registry — not ours)
-└── .devcontainer/
-    └── devcontainer.json             # Devcontainer config (telemetry disabled)
+clawhub-lab/
+  skills/                           # Published skill bundles + one installed sample
+    coding-agent/SKILL.md           # (installed from registry during research — not ours)
+    docker-sandbox/SKILL.md
+    csv-pipeline/SKILL.md
+    api-dev/SKILL.md
+    cicd-pipeline/SKILL.md
+    sql-toolkit/SKILL.md
+    test-patterns/SKILL.md
+    log-analyzer/SKILL.md
+    security-audit/SKILL.md
+    infra-as-code/SKILL.md
+    perf-profiler/SKILL.md
+    git-workflows/SKILL.md
+    regex-patterns/SKILL.md
+    ssh-tunnel/SKILL.md
+    container-debug/SKILL.md
+    data-validation/SKILL.md
+    shell-scripting/SKILL.md
+    dns-networking/SKILL.md
+    cron-scheduling/SKILL.md
+    encoding-formats/SKILL.md
+    makefile-build/SKILL.md
+    skill-writer/SKILL.md
+    skill-reviewer/SKILL.md
+    skill-search-optimizer/SKILL.md
+    emergency-rescue/SKILL.md
+  docs/
+    journey.md                      # Full session narrative — from package vetting to publishing
+    research/
+      clawdhub-platform-report.md   # Technical report: API, schemas, security model, registry stats
+      security-report.md            # Trojanized skill analysis and security findings
+    setup/
+      claude-speckit.md             # Spec-driven development framework reference
+      airgapped-sandbox.md          # Air-gapped Docker sandbox setup guide
+  .devcontainer/
+    devcontainer.json               # Devcontainer config (telemetry disabled)
 ```
-
-The hardened containment framework lives in its own repo: [openclaw-vault](https://github.com/gitgoodordietrying/openclaw-vault)
 
 ## How Skills Work
 
@@ -125,6 +171,14 @@ can follow to perform the task.
 
 Install any skill with `molthub install <slug>`. Skills are placed in `./skills/<slug>/` and loaded by the agent on demand.
 
+---
+
+## Companion Repositories
+
+- **[openclaw-vault](https://github.com/gitgoodordietrying/openclaw-vault)** — Hardened container for running OpenClaw agents. Proxy-side API key injection, domain allowlisting, kill switch, 15-point security verification. The safe way to experiment with the ecosystem.
+
+---
+
 ## License
 
-Skills are published to ClawdHub under its registry terms. Source files in this repo are available for reference.
+Skills are published to ClawHub under its registry terms. Source files in this repo are available for reference.
