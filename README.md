@@ -1,6 +1,6 @@
 # clawhub-lab
 
-Skill development for [ClawHub](https://clawdhub.com) and ecosystem research into [OpenClaw](https://openclaw.dev), [Moltbook](https://moltbook.com), and their surrounding infrastructure. Twenty-four agent skills published to the registry — infrastructure tools the gold rush left empty — plus platform reverse-engineering, a trojanized skill discovery, and a security analysis compilation.
+The Skill Development Workbench for [ClawHub](https://clawdhub.com). An offline-first pipeline to build, validate, and publish agent skills: `make new` → `make lint` → `make scan` → `make test` → `make publish`.
 
 **Author**: [@gitgoodordietrying](https://github.com/gitgoodordietrying)
 
@@ -8,33 +8,88 @@ Skill development for [ClawHub](https://clawdhub.com) and ecosystem research int
 
 ## What Is This
 
-A skill development lab and ecosystem research repository. Two purposes, one codebase:
+A complete development workbench for ClawHub skills. Twenty-four published skills, a linter, an offline security scanner, a test framework, and a gated publishing pipeline — all driven from a single Makefile.
 
-1. **Skill publisher** — 24 production-quality skills filling infrastructure gaps in the ClawHub registry (SQL, CI/CD, testing, security, profiling, and 19 more). Designed to age well past the gold rush phase.
-2. **Research lab** — API reverse-engineering, registry analysis, Moltbook social network investigation, a trojanized skill incident report, and a compiled security threat landscape.
+**What you can do here:** scaffold new skills from templates, lint them for structure and content quality, scan them for malicious patterns (offline, no network required), run behavioral tests, and publish through a gated pipeline.
 
-**What you can do here:** read and reuse skill source, review ecosystem research, reference the security findings, or use the development environment to write your own skills.
-
-**What this isn't:** a runtime for running OpenClaw agents, a sandbox for executing untrusted code, or a replacement for proper container isolation. For that, see [openclaw-vault](https://github.com/gitgoodordietrying/openclaw-vault) — the hardened container companion where your API key never enters the container.
+**What this isn't:** a runtime for running OpenClaw agents, or a sandbox for executing untrusted code. For that, see [openclaw-vault](https://github.com/gitgoodordietrying/openclaw-vault) — the hardened container companion where your API key never enters the container.
 
 ---
 
-## The Ecosystem (Who's Who)
+## Quick Start
 
-The naming is confusing because everything rebranded in the same week. Here's the map:
+### Option A: VS Code Dev Containers
 
-- **OpenClaw** — the agent runtime (formerly Clawdbot, then Moltbot). Open-source, runs on your machine, full system access by default.
-- **ClawHub** — the skill registry. Think npm for agent plugins. Publish with `molthub publish`, install with `molthub install`. 11.9% malicious rate during the ClawHavoc campaign.
-- **Moltbook** — the social network for AI agents. 1.6M registered agents, vote counts trivially exploitable, real technical discourse buried under noise.
-- **molthub** — the CLI tool (`npm install -g molthub`). Package manager for ClawHub skills.
+Open this repo in VS Code with the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers). The devcontainer installs Node.js, Python, molthub, and all dependencies automatically.
 
-These layers stack: ClawHub supplies capabilities → OpenClaw runs the agent → Moltbook connects agents socially. For full definitions and architecture diagrams, see the [openclaw-vault README](https://github.com/gitgoodordietrying/openclaw-vault#what-is-openclaw).
+### Option B: Local
+
+Requirements: bash, git, python3 (for YAML/JSON validation). Optional: molthub (`npm install -g molthub`).
+
+```bash
+make help          # Show all commands
+make new SKILL=my-tool          # Scaffold from template
+make lint          # Lint all skills
+make scan          # Security scan all skills
+make test          # Run behavioral tests
+make check         # Full pipeline: lint + scan + test
+```
+
+---
+
+## The Pipeline
+
+### Linter (`make lint`)
+
+Automates skill quality review. Checks:
+- **Frontmatter** — delimiters, required fields (`name`, `description`, `metadata`), valid slug, description length, valid JSON metadata
+- **Structure** — H1 title, `## When to Use` section, `## Tips` section
+- **Content quality** — line count (150-700), code block density (8+ blocks), language tags on fences, no TODO/FIXME/XXX placeholders
+- **Metadata consistency** — each binary in `requires.anyBins` is referenced in the content body
+
+### Scanner (`make scan`)
+
+**Offline security scanner** — works without network. Pattern database derived from the real [moltbook-ay trojan](docs/research/security-report.md) and ClawHavoc campaign analysis.
+
+| Category | Severity | What it catches |
+|----------|----------|-----------------|
+| C2/Download | CRITICAL | curl/wget/fetch to external URLs |
+| Archive execution | CRITICAL | Password-protected ZIP/7z extraction |
+| Exec download | CRITICAL | chmod+execute, bash -c with curl, eval with subshell |
+| Credential access | HIGH | Reading .env, .ssh/id_rsa, printenv |
+| Data exfiltration | CRITICAL | curl POST with variable data, netcat to IPs |
+| Obfuscation | HIGH | Base64-decode piped to shell, hex-encoded strings |
+| Persistence | HIGH | crontab modification, .bashrc/.profile appending |
+
+Skills that legitimately discuss these patterns (like `security-audit`) can use `# scan:ignore-next-line` inline or a `.scanignore` file.
+
+### Test Framework (`make test`)
+
+Behavioral assertions for skills — the "pytest for SKILL.md files":
+
+```bash
+assert_section_exists "$SKILL" "When to Use"
+assert_contains "$SKILL" "docker\s+(run|build|exec)"
+assert_not_contains "$SKILL" "(TODO|FIXME|XXX)"
+assert_min_code_blocks "$SKILL" 8
+assert_frontmatter_field "$SKILL" "name" "^docker-sandbox$"
+```
+
+Write `tests/<skill-name>.test.sh` with `test_*` functions. The runner discovers and executes them automatically.
+
+### Publisher (`make publish`)
+
+Gated pipeline: lint → scan → test must all pass before `molthub publish` runs. Usage:
+
+```bash
+make publish SKILL=my-tool VERSION=1.0.0
+```
 
 ---
 
 ## Published Skills
 
-The ClawHub registry launched in late January 2026 with ~200+ skills — mostly Twitter CLI forks, crypto bots, and coding agent duplicates. What was missing: the infrastructure tools developers actually use daily. Twenty skills fill those gaps, three meta-skills help anyone write and optimize skills for the registry, and the Emergency Rescue Kit is the skill you hope you never need.
+Twenty-four production-quality skills filling infrastructure gaps in the ClawHub registry.
 
 ### Batch 1 — Gap-Fill (built in Docker sandbox)
 
@@ -87,26 +142,17 @@ The ClawHub registry launched in late January 2026 with ~200+ skills — mostly 
 
 ---
 
-## Research & Security Findings
+<details>
+<summary><strong>Research & Security Findings</strong></summary>
 
 Ecosystem exploration produced several research artifacts:
 
 - **Trojanized skill discovery** — `moltbook-ay` contained instructions to download and execute malware via password-protected archives. Classic social engineering adapted for autonomous agents. No code was executed; the `molthub install` process was [verified from source](docs/journey.md#phase-11-security-audit) to be download-extract-write only.
 - **ClawHub platform analysis** — API reverse-engineering, registry discovery protocol, skill format schema, publishing flow, semantic search mechanics, and registry statistics at one week old (~200+ skills). Full report: [clawdhub-platform-report.md](docs/research/clawdhub-platform-report.md).
-- **Moltbook investigation** — 1.6M agents, 154K posts, a publicly documented vote exploit, and the decision to retract rather than participate. Documented in [journey.md](docs/journey.md#phase-10-moltbook-exploration--security-incident).
 - **Security compilation** — Willison's "lethal trifecta" framework, CVE-2026-25253 (one-click RCE), the ClawHavoc supply chain campaign (341 malicious skills), the Moltbook database breach, and 21,639 exposed instances. Full analysis: [security-report.md](docs/research/security-report.md).
 - **End-to-end narrative** — From package vetting to 24 published skills, ecosystem retraction, and lessons learned: [journey.md](docs/journey.md).
 
----
-
-## Development Environment
-
-All skill development was done inside a Docker Desktop sandbox (Docker 4.59.0) with telemetry disabled. The sandbox provides VM-level isolation with network proxy controls — the right precaution for a one-week-old platform from an unknown ecosystem.
-
-- **Sandbox setup guide**: [airgapped-sandbox.md](docs/setup/airgapped-sandbox.md)
-- **Full container hardening**: [openclaw-vault](https://github.com/gitgoodordietrying/openclaw-vault) (proxy-side API key injection, allowlist networking, kill switch)
-- **Spec-driven workflow**: [claude-speckit.md](docs/setup/claude-speckit.md) — adapted from GitHub Spec-Kit for agentic development
-- **Devcontainer config**: [.devcontainer/devcontainer.json](.devcontainer/devcontainer.json) (telemetry disabled via `CLAWHUB_DISABLE_TELEMETRY=1`)
+</details>
 
 ---
 
@@ -114,42 +160,47 @@ All skill development was done inside a Docker Desktop sandbox (Docker 4.59.0) w
 
 ```
 clawhub-lab/
-  skills/                           # Published skill bundles + one installed sample
-    coding-agent/SKILL.md           # (installed from registry during research — not ours)
+  skills/                           # Published skill bundles
     docker-sandbox/SKILL.md
     csv-pipeline/SKILL.md
-    api-dev/SKILL.md
-    cicd-pipeline/SKILL.md
-    sql-toolkit/SKILL.md
-    test-patterns/SKILL.md
-    log-analyzer/SKILL.md
-    security-audit/SKILL.md
-    infra-as-code/SKILL.md
-    perf-profiler/SKILL.md
-    git-workflows/SKILL.md
-    regex-patterns/SKILL.md
-    ssh-tunnel/SKILL.md
-    container-debug/SKILL.md
-    data-validation/SKILL.md
-    shell-scripting/SKILL.md
-    dns-networking/SKILL.md
-    cron-scheduling/SKILL.md
-    encoding-formats/SKILL.md
-    makefile-build/SKILL.md
-    skill-writer/SKILL.md
-    skill-reviewer/SKILL.md
-    skill-search-optimizer/SKILL.md
-    emergency-rescue/SKILL.md
+    ... (24 skills total)
+  tools/                            # Workbench tooling
+    lib/
+      common.sh                     # Colors, logging, skill discovery
+      frontmatter.sh                # YAML frontmatter parser + validator
+      patterns.sh                   # Malicious pattern database for scanner
+    skill-lint.sh                   # Linter
+    skill-scan.sh                   # Offline security scanner
+    skill-test.sh                   # Test runner wrapper
+    skill-new.sh                    # Skill scaffolder
+    skill-publish.sh                # Gated publisher
+    skill-stats.sh                  # Adoption metrics fetcher
+  templates/                        # Skill templates
+    cli-tool/SKILL.md               # CLI/tool reference template
+    workflow/SKILL.md               # Process/methodology template
+    language-ref/SKILL.md           # Language/syntax reference template
+  tests/                            # Behavioral tests
+    _framework/
+      runner.sh                     # Test file discovery + execution
+      assertions.sh                 # assert_section_exists, assert_contains, etc.
+    docker-sandbox.test.sh          # Example test files
+    sql-toolkit.test.sh
+    ...
   docs/
-    journey.md                      # Full session narrative — from package vetting to publishing
+    journey.md                      # Full session narrative
     research/
-      clawdhub-platform-report.md   # Technical report: API, schemas, security model, registry stats
-      security-report.md            # Trojanized skill analysis and security findings
+      clawdhub-platform-report.md   # API reverse-engineering report
+      security-report.md            # Trojanized skill + security findings
     setup/
-      claude-speckit.md             # Spec-driven development framework reference
-      airgapped-sandbox.md          # Air-gapped Docker sandbox setup guide
+      claude-speckit.md             # Spec-driven development reference
+      airgapped-sandbox.md          # Docker sandbox setup guide
   .devcontainer/
-    devcontainer.json               # Devcontainer config (telemetry disabled)
+    devcontainer.json               # Dev container config
+    package.json                    # Workbench package manifest
+    setup.sh                        # Post-create setup script
+  .github/workflows/
+    skill-ci.yml                    # CI: lint → scan → test on PR
+  Makefile                          # Single entry point for all commands
 ```
 
 ## How Skills Work
@@ -175,10 +226,10 @@ Install any skill with `molthub install <slug>`. Skills are placed in `./skills/
 
 ## Companion Repositories
 
-- **[openclaw-vault](https://github.com/gitgoodordietrying/openclaw-vault)** — Hardened container for running OpenClaw agents. Proxy-side API key injection, domain allowlisting, kill switch, 15-point security verification. The safe way to experiment with the ecosystem.
+- **[openclaw-vault](https://github.com/gitgoodordietrying/openclaw-vault)** — Hardened container for running OpenClaw agents. Proxy-side API key injection, domain allowlisting, kill switch, 15-point security verification.
 
 ---
 
 ## License
 
-Skills are published to ClawHub under its registry terms. Source files in this repo are available for reference.
+Skills are published to ClawHub under its registry terms. Source files in this repo are [MIT licensed](LICENSE).
