@@ -1,20 +1,23 @@
 {
-    "name": "openclaw-sandbox",
-    "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
-    "features": {
-      "ghcr.io/devcontainers/features/git:1": {}
-    },
-    "customizations": {
-      "vscode": {
-        "extensions": [
-          "ms-vscode.vscode-node-debug2",
-          "dbaeumer.vscode-eslint"
-        ]
-      }
-    },
-    "containerEnv": {
-      "CLAWHUB_DISABLE_TELEMETRY": "1"
-    },
-    "postCreateCommand": "npm install -g npm@latest && npm install -g molthub",
-    "remoteUser": "node"
-  }
+  "name": "clawhub-workbench",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/python:1": { "version": "3.12" },
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "davidanson.vscode-markdownlint",
+        "timonwong.shellcheck",
+        "redhat.vscode-yaml"
+      ]
+    }
+  },
+  "containerEnv": {
+    "CLAWHUB_DISABLE_TELEMETRY": "1"
+  },
+  "postCreateCommand": "bash .devcontainer/setup.sh",
+  "remoteUser": "node"
+}

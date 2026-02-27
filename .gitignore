@@ -11,6 +11,9 @@ skills/*/.clawdhub/
 # Claude Code local settings
 .claude/
 
+# Workbench cache (stats snapshots)
+.workbench-cache/
+
 # Keep skills and docs tracked
 !skills/
 !docs/
