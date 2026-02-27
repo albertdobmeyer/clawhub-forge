@@ -226,7 +226,10 @@ Install any skill with `molthub install <slug>`. Skills are placed in `./skills/
 
 ## Companion Repositories
 
-- **[openclaw-vault](https://github.com/gitgoodordietrying/openclaw-vault)** — Hardened container for running OpenClaw agents. Proxy-side API key injection, domain allowlisting, kill switch, 15-point security verification.
+These three repos form a trifecta for safe engagement with the OpenClaw ecosystem:
+
+- **[openclaw-vault](https://github.com/gitgoodordietrying/openclaw-vault)** — Run agents safely. Hardened container with proxy-side API key injection, domain allowlisting, kill switch, 15-point security verification.
+- **[moltbook-pioneer](https://github.com/gitgoodordietrying/moltbook-pioneer)** — Socialize safely. Research and safe participation in the Moltbook agentic social network. Feed scanner, agent census, identity management.
 
 ---
 
