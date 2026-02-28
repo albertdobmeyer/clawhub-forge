@@ -8,6 +8,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib/common.sh"
 
 CACHE_DIR="$REPO_ROOT/.workbench-cache"
+TODAY=$(date +%Y%m%d)
+PYTHON=$(command -v python3 2>/dev/null || command -v python 2>/dev/null || echo "")
 SKILLS_DIR="$REPO_ROOT/skills"
 TESTS_DIR="$REPO_ROOT/tests"
 TEMPLATES_DIR="$REPO_ROOT/templates"
@@ -126,11 +128,11 @@ else
 fi
 
 # ─── Check 10: Python available ───
-if command -v python3 > /dev/null 2>&1; then
-  py_ver=$(python3 --version 2>&1 | head -1)
+if [[ -n "$PYTHON" ]]; then
+  py_ver=$($PYTHON --version 2>&1 | head -1)
   check_pass "[10/12] Python available ($py_ver)"
 else
-  check_fail "[10/12] Python3 not found (required for SARIF/YAML tools)"
+  check_fail "[10/12] Python not found (required for SARIF/YAML tools)"
 fi
 
 # ─── Check 11: Stats cache exists and is <7d old ───
@@ -139,7 +141,7 @@ if [[ -d "$CACHE_DIR" ]]; then
   if [[ -n "$latest_stats" ]]; then
     # Check age: compare filename date to today
     file_date=$(basename "$latest_stats" | sed 's/stats-//;s/\.json//')
-    days_old=$(python3 -c "
+    days_old=$($PYTHON -c "
 from datetime import datetime
 d1 = datetime.strptime('$file_date', '%Y%m%d')
 d2 = datetime.strptime('$TODAY', '%Y%m%d')

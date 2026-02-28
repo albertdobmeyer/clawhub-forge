@@ -61,8 +61,8 @@ done
 
 # Run tests to see pass/fail
 test_output=$(bash "$REPO_ROOT/tools/skill-test.sh" 2>&1 || true)
-test_passed=$(echo "$test_output" | grep -oP '\d+(?= passed)' || echo "$assertion_count")
-test_failed=$(echo "$test_output" | grep -oP '\d+(?= failed)' || echo "0")
+test_passed=$(echo "$test_output" | grep -oE '[0-9]+ passed' | grep -oE '[0-9]+' || echo "$assertion_count")
+test_failed=$(echo "$test_output" | grep -oE '[0-9]+ failed' | grep -oE '[0-9]+' || echo "0")
 
 echo -e "  Test:     $test_file_count test files, $assertion_count assertions, $test_passed passed"
 
@@ -78,24 +78,24 @@ echo "  - SARIF output for continuous GitHub code scanning"
 echo ""
 echo -e "${BOLD}Registry Position:${RESET}"
 
+# Count our published skills
+our_count=0
+while IFS= read -r dir; do
+  slug=$(get_skill_slug "$dir")
+  [[ "$slug" == "coding-agent" ]] && continue
+  our_count=$((our_count + 1))
+done < <(discover_skills "$SKILLS_DIR")
+
 # Check for cached stats
 latest_stats=$(find "$CACHE_DIR" -name "stats-*.json" -type f 2>/dev/null | sort -r | head -1)
 if [[ -n "$latest_stats" ]]; then
   python3 -c "
-import json
-data = json.load(open('$latest_stats'))
+import json, sys
+data = json.load(open(sys.argv[1]))
 total_dl = sum(int(s['downloads']) for s in data if s['downloads'] not in ['-', ''])
-print(f'  ${#skills[@]:-24} published skills, {total_dl} total downloads')
-" 2>/dev/null || echo "  (stats cache unavailable — run 'make stats')"
+print(f'  $our_count published skills, {total_dl} total downloads')
+" "$latest_stats" 2>/dev/null || echo "  $our_count published skills (stats cache unavailable — run 'make stats')"
 else
-  # Try fetching live
-  our_count=0
-  total_dl=0
-  while IFS= read -r dir; do
-    slug=$(get_skill_slug "$dir")
-    [[ "$slug" == "coding-agent" ]] && continue
-    our_count=$((our_count + 1))
-  done < <(discover_skills "$SKILLS_DIR")
   echo "  $our_count published skills (run 'make stats' for download totals)"
 fi
 
