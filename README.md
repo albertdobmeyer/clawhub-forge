@@ -8,7 +8,7 @@ The Skill Development Workbench for [ClawHub](https://clawdhub.com). An offline-
 
 ## What Is This
 
-A complete development workbench for ClawHub skills. Twenty-four published skills, a linter, an offline security scanner, a test framework, and a gated publishing pipeline — all driven from a single Makefile.
+A complete development workbench for ClawHub skills. Twenty-five published skills, a linter, an offline security scanner (47 patterns, 12 categories, SARIF output), a test framework (100% coverage), and a gated publishing pipeline — all driven from a single Makefile.
 
 **What you can do here:** scaffold new skills from templates, lint them for structure and content quality, scan them for malicious patterns (offline, no network required), run behavioral tests, and publish through a gated pipeline.
 
@@ -49,7 +49,7 @@ Automates skill quality review. Checks:
 
 ### Scanner (`make scan`)
 
-**Offline security scanner** — works without network. Pattern database derived from the real [moltbook-ay trojan](docs/research/security-report.md) and ClawHavoc campaign analysis.
+**Offline security scanner** — works without network. 47 patterns across 12 categories with MITRE ATT&CK IDs, derived from the real [moltbook-ay trojan](docs/research/security-report.md) and ClawHavoc campaign analysis.
 
 | Category | Severity | What it catches |
 |----------|----------|-----------------|
@@ -60,6 +60,13 @@ Automates skill quality review. Checks:
 | Data exfiltration | CRITICAL | curl POST with variable data, netcat to IPs |
 | Obfuscation | HIGH | Base64-decode piped to shell, hex-encoded strings |
 | Persistence | HIGH | crontab modification, .bashrc/.profile appending |
+| Privilege escalation | MEDIUM | sudo chmod 777, chown root, setuid |
+| Container escape | HIGH | --privileged, SYS_ADMIN, mount host root |
+| Supply chain | MEDIUM | Unsafe npm install, pip --pre, registry hijack |
+| Environment injection | MEDIUM | LD_PRELOAD, PATH manipulation, env -i |
+| Resource abuse | HIGH | Fork bomb, infinite loop with network |
+
+**Output modes:** `make scan` (colored terminal), `make scan-summary` (one-line per skill), `make scan-json` (structured JSON), `make scan-sarif` (SARIF 2.1.0 for GitHub code scanning). Scanner self-test: `make self-test`.
 
 Skills that legitimately discuss these patterns (like `security-audit`) can use `# scan:ignore-next-line` inline or a `.scanignore` file.
 
@@ -163,12 +170,13 @@ clawhub-lab/
   skills/                           # Published skill bundles
     docker-sandbox/SKILL.md
     csv-pipeline/SKILL.md
-    ... (24 skills total)
+    ... (25 skills total)
   tools/                            # Workbench tooling
     lib/
       common.sh                     # Colors, logging, skill discovery
       frontmatter.sh                # YAML frontmatter parser + validator
-      patterns.sh                   # Malicious pattern database for scanner
+      patterns.sh                   # Malicious pattern database (47 patterns, MITRE ATT&CK)
+      sarif_formatter.py              # SARIF 2.1.0 output formatter
     skill-lint.sh                   # Linter
     skill-scan.sh                   # Offline security scanner
     skill-test.sh                   # Test runner wrapper
@@ -183,8 +191,12 @@ clawhub-lab/
     _framework/
       runner.sh                     # Test file discovery + execution
       assertions.sh                 # assert_section_exists, assert_contains, etc.
-    docker-sandbox.test.sh          # Example test files
-    sql-toolkit.test.sh
+    scanner-self-test/              # Scanner accuracy validation
+      known-bad.md                  # Hits every pattern category
+      known-clean.md                # Zero findings expected
+      allowlisted.md                # Findings suppressed via .scanignore
+      run.sh                        # Self-test runner
+    docker-sandbox.test.sh          # 25 test files (100% skill coverage)
     ...
   docs/
     journey.md                      # Full session narrative

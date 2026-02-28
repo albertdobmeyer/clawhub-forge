@@ -27,8 +27,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
       - name: Run security scanner
         run: make scan
+      - name: Generate SARIF report
+        if: always()
+        run: make scan-sarif > results.sarif 2>/dev/null || true
+      - name: Upload SARIF to GitHub
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: results.sarif
+        continue-on-error: true
+      - name: Run scanner self-test
+        run: make self-test
 
   test:
     name: Skill Tests
@@ -43,6 +57,14 @@ jobs:
         run: pip install pyyaml
       - name: Run tests
         run: make test
+      - name: Verify test coverage
+        run: |
+          test_count=$(ls -1 tests/*.test.sh 2>/dev/null | wc -l)
+          skill_count=$(ls -1d skills/*/SKILL.md 2>/dev/null | wc -l)
+          echo "Tests: $test_count / Skills: $skill_count"
+          if (( test_count < skill_count )); then
+            echo "::warning::Test coverage incomplete: $test_count tests for $skill_count skills"
+          fi
 
   # Publish step (sketch — full auto-publish with version detection is a follow-up)
   # publish:
