@@ -23,6 +23,7 @@ fi
 
 CRITICAL_COUNT=0
 HIGH_COUNT=0
+MEDIUM_COUNT=0
 FINDING_COUNT=0
 
 # Check if a line should be ignored via inline comment or .scanignore
@@ -49,6 +50,7 @@ is_ignored() {
   local scanignore="$skill_dir/.scanignore"
   if [[ -f "$scanignore" ]]; then
     while IFS= read -r range; do
+      range="${range%%$'\r'}"  # Strip Windows CR
       # Skip comments and empty lines
       [[ "$range" =~ ^#.*$ || -z "$range" ]] && continue
       # Support "L10-L20" range format
@@ -76,7 +78,7 @@ for skill_dir in "${skills[@]}"; do
   skill_findings=0
 
   for pattern_def in "${SCAN_PATTERNS[@]}"; do
-    IFS='|' read -r severity category regex description <<< "$pattern_def"
+    IFS='|' read -r severity category regex description mitre_id cve_ids <<< "$pattern_def"
 
     # Search for pattern matches with line numbers
     while IFS=: read -r line_num match_line; do
@@ -104,6 +106,7 @@ for skill_dir in "${skills[@]}"; do
           ;;
         *)
           echo -e "  ${BLUE}MEDIUM${RESET}   [${category}] L${line_num}: ${description}"
+          MEDIUM_COUNT=$((MEDIUM_COUNT + 1))
           ;;
       esac
 
@@ -125,6 +128,7 @@ echo -e "${BOLD}Scan Results:${RESET}"
 echo -e "  Total findings: ${FINDING_COUNT}"
 echo -e "  ${RED}Critical: ${CRITICAL_COUNT}${RESET}"
 echo -e "  ${YELLOW}High: ${HIGH_COUNT}${RESET}"
+echo -e "  ${BLUE}Medium: ${MEDIUM_COUNT}${RESET}"
 echo -e "  ${GREEN}Clean skills: ${PASS_COUNT}${RESET}"
 echo ""
 
