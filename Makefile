@@ -1,4 +1,4 @@
-.PHONY: help new lint lint-one scan scan-one scan-json scan-sarif scan-summary test test-one publish stats check self-test clean
+.PHONY: help new lint lint-one scan scan-one scan-json scan-sarif scan-summary test test-one publish stats stats-trend stats-rank check self-test verify explore report clean
 
 SHELL := /bin/bash
 SKILLS_DIR := skills
@@ -52,6 +52,15 @@ publish: ## Lint + scan + test + publish (SKILL=name VERSION=x.y.z)
 
 stats: ## Check adoption metrics from ClawHub API
 	@bash $(TOOLS_DIR)/skill-stats.sh
+
+stats-trend: ## Stats with growth deltas vs previous snapshots
+	@bash $(TOOLS_DIR)/skill-stats.sh --trend
+
+stats-rank: ## Our skills ranked against registry top 50
+	@bash $(TOOLS_DIR)/skill-stats.sh --rank
+
+explore: ## Browse registry top skills (QUERY=term SORT=downloads|trending|installs LIMIT=n)
+	@bash $(TOOLS_DIR)/registry-explore.sh $(if $(QUERY),"$(QUERY)") $(if $(SORT),--sort=$(SORT)) $(if $(LIMIT),--limit=$(LIMIT))
 
 check: ## Full pipeline: lint + scan + test
 	@echo ""
