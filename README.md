@@ -8,7 +8,7 @@ The Skill Development Workbench for [ClawHub](https://clawdhub.com). An offline-
 
 ## What Is This
 
-A complete development workbench for ClawHub skills. Twenty-five published skills, a linter, an offline security scanner (87 patterns, 13 categories including prompt injection detection, SARIF output), a test framework (100% coverage), and a gated publishing pipeline — all driven from a single Makefile.
+A complete development workbench for ClawHub skills. Twenty-five published skills, a linter, an offline security scanner (87 patterns, 13 categories including prompt injection detection, SARIF output), a zero-trust skill verifier (guilty-until-proven-innocent line classification), a test framework (100% coverage), and a gated publishing pipeline — all driven from a single Makefile.
 
 **What you can do here:** scaffold new skills from templates, lint them for structure and content quality, scan them for malicious patterns (offline, no network required), run behavioral tests, and publish through a gated pipeline.
 
@@ -35,6 +35,7 @@ What the pipeline provides that raw authoring doesn't:
 - **Gated publishing** — `make publish` won't run until lint, scan, and test all pass. No human judgment call required at the gate.
 - **SARIF output for CI** — GitHub code scanning integration via `make scan-sarif`, so the pipeline runs on every PR automatically.
 - **Transparent allowlisting** — skills that legitimately discuss security patterns (like `security-audit`) use explicit `.scanignore` files, not global suppression. Every exception is auditable.
+- **Zero-trust verification** — `make verify-all` classifies every line in every skill file. One unrecognizable line quarantines the entire skill. Catches novel attacks the blocklist misses.
 - **Tool test suite** — 40+ behavioral tests verify the workbench tools themselves (`make test-tools`).
 - **Trend tracking** — `make stats-trend` shows whether skills are growing or dying. `make stats-rank` shows competitive positioning.
 
@@ -50,6 +51,9 @@ Commands for the human operator to assess workbench health and competitive posit
 make verify                           # 12-point workbench health check
 make report                           # Pipeline value summary
 make scan-strict                      # Scan with --strict (HIGH blocks)
+make verify-all                       # Zero-trust verify all skills
+make verify-skill SKILL=docker-sandbox # Verify single skill
+make verify-report SKILL=docker-sandbox # Per-line verdict report
 make test-tools                       # Run tool behavioral tests
 make check-all                        # Full pipeline + self-test + tool tests
 make explore                          # Top 20 skills by downloads
@@ -129,6 +133,30 @@ Automates skill quality review. Checks:
 **Output modes:** `make scan` (colored terminal), `make scan-summary` (one-line per skill), `make scan-json` (structured JSON), `make scan-sarif` (SARIF 2.1.0 for GitHub code scanning), `make scan-strict` (HIGH blocks too). Scanner self-test: `make self-test`.
 
 Skills that legitimately discuss these patterns (like `security-audit`) can use `<!-- scan:ignore -->` inline or a `.scanignore` file. Scanignore files are audited: ranges >50 lines are rejected.
+
+### Zero-Trust Verifier (`make verify-skill SKILL=name`)
+
+**Guilty until proven innocent.** The scanner uses a blocklist (scan for known-bad, let everything else through). The verifier flips this: every line in every file must be classified as SAFE, or the entire skill is quarantined. No partial passes, no thresholds.
+
+Every line gets one of three verdicts:
+
+| Verdict | Meaning |
+|---|---|
+| `SAFE` | Line matches a known-safe pattern (structural markdown, prose under 500 chars, code inside fenced blocks, frontmatter fields) |
+| `SUSPICIOUS` | Line doesn't match any safe pattern (possible obfuscation, unknown encoding, excessively long content) |
+| `MALICIOUS` | Line triggers the 87-pattern blocklist |
+
+**Release rule:** A skill is released from quarantine ONLY if it has ZERO malicious lines AND ZERO suspicious lines. One unrecognizable line quarantines the entire skill.
+
+**Two-stage defense:** Post-install, skills pass through `skill-scan.sh --strict` (blocklist, fast) then `skill-verify.sh --strict` (allowlist, thorough). Both must pass.
+
+**Trust manifests:** Our own skills can carry `.trust` files with SHA-256 content hashes, allowing them to skip verification when unchanged. External skills never have trust manifests.
+
+```bash
+make verify-skill SKILL=docker-sandbox   # Verify single skill
+make verify-all                           # Verify all skills
+make verify-report SKILL=docker-sandbox   # Per-line verdict report
+```
 
 ### Test Framework (`make test`)
 
@@ -236,9 +264,12 @@ clawhub-lab/
       common.sh                     # Colors, logging, skill discovery
       frontmatter.sh                # YAML frontmatter parser + validator
       patterns.sh                   # Malicious pattern database (87 patterns, 13 categories, MITRE ATT&CK)
+      line-classifier.sh              # Zero-trust line classifier (SAFE/SUSPICIOUS/MALICIOUS)
+      trust-manifest.sh               # .trust file generation + hash validation
       sarif_formatter.py              # SARIF 2.1.0 output formatter
     skill-lint.sh                   # Linter
     skill-scan.sh                   # Offline security scanner
+    skill-verify.sh                 # Zero-trust skill verifier
     skill-test.sh                   # Test runner wrapper
     skill-new.sh                    # Skill scaffolder (creates skill + test)
     skill-publish.sh                # Gated publisher

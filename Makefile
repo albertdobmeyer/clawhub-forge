@@ -1,4 +1,4 @@
-.PHONY: help new lint lint-one scan scan-one scan-json scan-sarif scan-summary scan-strict test test-one test-tools publish stats stats-trend stats-rank check check-all self-test verify explore report clean
+.PHONY: help new lint lint-one scan scan-one scan-json scan-sarif scan-summary scan-strict test test-one test-tools publish stats stats-trend stats-rank check check-all self-test verify verify-skill verify-all verify-report explore report clean
 
 SHELL := /bin/bash
 SKILLS_DIR := skills
@@ -43,6 +43,15 @@ scan-strict: ## Scan with --strict (HIGH findings block)
 
 self-test: ## Run scanner self-test (known-bad/clean/allowlisted)
 	@bash $(TESTS_DIR)/scanner-self-test/run.sh
+
+verify-skill: ## Zero-trust verify single skill (SKILL=name)
+	@bash $(TOOLS_DIR)/skill-verify.sh $(SKILLS_DIR)/$(SKILL)
+
+verify-all: ## Zero-trust verify all skills
+	@bash $(TOOLS_DIR)/skill-verify.sh $(SKILLS_DIR)
+
+verify-report: ## Verify with per-line report (SKILL=name)
+	@bash $(TOOLS_DIR)/skill-verify.sh --report $(SKILLS_DIR)/$(SKILL)
 
 test: ## Run skill behavioral tests
 	@bash $(TOOLS_DIR)/skill-test.sh

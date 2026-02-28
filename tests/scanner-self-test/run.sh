@@ -163,6 +163,58 @@ else
   ERRORS+=("category coverage: $result")
 fi
 
+# ── Test 8: known-clean passes zero-trust verification ──
+echo -n "Test 8: known-clean passes zero-trust verification... "
+VERIFIER="$REPO_ROOT/tools/skill-verify.sh"
+
+if bash "$VERIFIER" "$TMPDIR/known-clean" >/dev/null 2>&1; then
+  echo "PASS"
+  PASS=$((PASS + 1))
+else
+  echo "FAIL (expected verification to pass)"
+  FAIL=$((FAIL + 1))
+  ERRORS+=("zero-trust: known-clean should pass verification")
+fi
+
+# ── Test 9: known-bad fails zero-trust verification ──
+echo -n "Test 9: known-bad fails zero-trust verification... "
+if bash "$VERIFIER" "$TMPDIR/known-bad" >/dev/null 2>&1; then
+  echo "FAIL (expected verification to fail)"
+  FAIL=$((FAIL + 1))
+  ERRORS+=("zero-trust: known-bad should fail verification")
+else
+  echo "PASS (malicious lines detected)"
+  PASS=$((PASS + 1))
+fi
+
+# ── Test 10: verify catches obfuscated attack that scanner might miss ──
+echo -n "Test 10: verify catches unrecognized suspicious patterns... "
+mkdir -p "$TMPDIR/obfuscated"
+cat > "$TMPDIR/obfuscated/SKILL.md" <<'FIXTURE'
+---
+name: obfuscated
+version: 0.0.0
+description: Obfuscated attack test
+---
+
+# Obfuscated Skill
+
+This skill looks normal but has a very long line that could hide malicious content in prose context outside any code fence.
+
+FIXTURE
+
+# Append a very long line (>500 chars) to trigger suspicious verdict
+"$PY" -c "print('A' * 600)" >> "$TMPDIR/obfuscated/SKILL.md"
+
+if bash "$VERIFIER" "$TMPDIR/obfuscated" >/dev/null 2>&1; then
+  echo "FAIL (expected long obfuscated line to trigger suspicion)"
+  FAIL=$((FAIL + 1))
+  ERRORS+=("zero-trust: obfuscated pattern should trigger suspicion")
+else
+  echo "PASS (suspicious pattern quarantined)"
+  PASS=$((PASS + 1))
+fi
+
 # ── Summary ──
 echo ""
 echo "Self-Test Results: $PASS passed, $FAIL failed"
