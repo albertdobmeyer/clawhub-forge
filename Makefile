@@ -1,4 +1,4 @@
-.PHONY: help new lint lint-one scan scan-one test test-one publish stats check clean
+.PHONY: help new lint lint-one scan scan-one scan-json scan-sarif scan-summary test test-one publish stats check self-test clean
 
 SHELL := /bin/bash
 SKILLS_DIR := skills
@@ -28,6 +28,18 @@ scan: ## Offline security scan all skills
 
 scan-one: ## Scan single skill (SKILL=name)
 	@bash $(TOOLS_DIR)/skill-scan.sh $(SKILLS_DIR)/$(SKILL)
+
+scan-json: ## Scan all skills, JSON output
+	@bash $(TOOLS_DIR)/skill-scan.sh --json $(SKILLS_DIR)
+
+scan-sarif: ## Scan all skills, SARIF 2.1.0 output
+	@bash $(TOOLS_DIR)/skill-scan.sh --sarif $(SKILLS_DIR)
+
+scan-summary: ## Scan all skills, one-line summary output
+	@bash $(TOOLS_DIR)/skill-scan.sh --summary $(SKILLS_DIR)
+
+self-test: ## Run scanner self-test (known-bad/clean/allowlisted)
+	@bash $(TESTS_DIR)/scanner-self-test/run.sh
 
 test: ## Run skill behavioral tests
 	@bash $(TOOLS_DIR)/skill-test.sh

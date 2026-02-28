@@ -1,15 +1,34 @@
 #!/usr/bin/env bash
 # Offline security scanner — pattern-based detection without network
-# Usage: skill-scan.sh <path>  (path = skills/ dir or single skill dir)
+# Usage: skill-scan.sh [--format=default|summary|json|sarif] <path>
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib/common.sh"
 source "$SCRIPT_DIR/lib/patterns.sh"
 
-TARGET="${1:-skills}"
+# ── Parse arguments ──
+FORMAT="default"
+TARGET=""
+for arg in "$@"; do
+  case "$arg" in
+    --format=*) FORMAT="${arg#--format=}" ;;
+    --summary)  FORMAT="summary" ;;
+    --json)     FORMAT="json" ;;
+    --sarif)    FORMAT="sarif" ;;
+    *)          TARGET="$arg" ;;
+  esac
+done
+TARGET="${TARGET:-skills}"
 
-log_header "Security scanning: $TARGET"
+# Suppress colors for machine-readable output
+if [[ "$FORMAT" != "default" ]]; then
+  RED='' GREEN='' YELLOW='' BLUE='' CYAN='' BOLD='' DIM='' RESET=''
+fi
+
+if [[ "$FORMAT" == "default" ]]; then
+  log_header "Security scanning: $TARGET"
+fi
 
 skills=()
 while IFS= read -r dir; do
@@ -25,6 +44,10 @@ CRITICAL_COUNT=0
 HIGH_COUNT=0
 MEDIUM_COUNT=0
 FINDING_COUNT=0
+
+# ── Findings collector (JSON-lines in memory) ──
+# Each finding: slug|severity|category|line_num|description|context|mitre_id|cve_ids
+FINDINGS=()
 
 # Check if a line should be ignored via inline comment or .scanignore
 is_ignored() {
@@ -72,68 +95,177 @@ is_ignored() {
   return 1
 }
 
+# ── Collect phase ──
+# Per-skill summary for --summary mode
+declare -A SKILL_CRITICAL SKILL_HIGH SKILL_MEDIUM
+
 for skill_dir in "${skills[@]}"; do
   file="$skill_dir/SKILL.md"
   slug=$(get_skill_slug "$skill_dir")
-  skill_findings=0
+  SKILL_CRITICAL[$slug]=0
+  SKILL_HIGH[$slug]=0
+  SKILL_MEDIUM[$slug]=0
 
   for pattern_def in "${SCAN_PATTERNS[@]}"; do
     IFS='|' read -r severity category regex description mitre_id cve_ids <<< "$pattern_def"
 
-    # Search for pattern matches with line numbers
     while IFS=: read -r line_num match_line; do
       [[ -z "$line_num" ]] && continue
 
-      # Check if this finding is allowlisted
       if is_ignored "$file" "$line_num" "$skill_dir"; then
         continue
       fi
 
-      if (( skill_findings == 0 )); then
-        echo -e "\n${CYAN}--- $slug ---${RESET}"
-      fi
-      skill_findings=$((skill_findings + 1))
       FINDING_COUNT=$((FINDING_COUNT + 1))
+      context=$(echo "$match_line" | head -c 120)
+
+      # Store finding
+      FINDINGS+=("${slug}|${severity}|${category}|${line_num}|${description}|${context}|${mitre_id:-}|${cve_ids:-}")
 
       case "$severity" in
         CRITICAL)
-          echo -e "  ${RED}CRITICAL${RESET} [${category}] L${line_num}: ${description}"
           CRITICAL_COUNT=$((CRITICAL_COUNT + 1))
+          SKILL_CRITICAL[$slug]=$(( ${SKILL_CRITICAL[$slug]} + 1 ))
           ;;
         HIGH)
-          echo -e "  ${YELLOW}HIGH${RESET}     [${category}] L${line_num}: ${description}"
           HIGH_COUNT=$((HIGH_COUNT + 1))
+          SKILL_HIGH[$slug]=$(( ${SKILL_HIGH[$slug]} + 1 ))
           ;;
         *)
-          echo -e "  ${BLUE}MEDIUM${RESET}   [${category}] L${line_num}: ${description}"
           MEDIUM_COUNT=$((MEDIUM_COUNT + 1))
+          SKILL_MEDIUM[$slug]=$(( ${SKILL_MEDIUM[$slug]} + 1 ))
           ;;
       esac
-
-      # Show context (the matching line, truncated)
-      context=$(echo "$match_line" | head -c 120)
-      echo -e "           ${DIM}${context}${RESET}"
 
     done < <(grep -nE "$regex" "$file" 2>/dev/null || true)
   done
 
-  if (( skill_findings == 0 )); then
-    log_pass "$slug: Clean"
+  if (( SKILL_CRITICAL[$slug] + SKILL_HIGH[$slug] + SKILL_MEDIUM[$slug] == 0 )); then
     count_pass
   fi
 done
 
-echo ""
-echo -e "${BOLD}Scan Results:${RESET}"
-echo -e "  Total findings: ${FINDING_COUNT}"
-echo -e "  ${RED}Critical: ${CRITICAL_COUNT}${RESET}"
-echo -e "  ${YELLOW}High: ${HIGH_COUNT}${RESET}"
-echo -e "  ${BLUE}Medium: ${MEDIUM_COUNT}${RESET}"
-echo -e "  ${GREEN}Clean skills: ${PASS_COUNT}${RESET}"
-echo ""
+# ── Render phase ──
+
+render_default() {
+  local current_slug=""
+  for finding in "${FINDINGS[@]+"${FINDINGS[@]}"}"; do
+    IFS='|' read -r slug severity category line_num description context mitre_id cve_ids <<< "$finding"
+
+    if [[ "$slug" != "$current_slug" ]]; then
+      echo -e "\n${CYAN}--- $slug ---${RESET}"
+      current_slug="$slug"
+    fi
+
+    case "$severity" in
+      CRITICAL) echo -e "  ${RED}CRITICAL${RESET} [${category}] L${line_num}: ${description}" ;;
+      HIGH)     echo -e "  ${YELLOW}HIGH${RESET}     [${category}] L${line_num}: ${description}" ;;
+      *)        echo -e "  ${BLUE}MEDIUM${RESET}   [${category}] L${line_num}: ${description}" ;;
+    esac
+    echo -e "           ${DIM}${context}${RESET}"
+  done
+
+  # Print clean skills
+  for skill_dir in "${skills[@]}"; do
+    slug=$(get_skill_slug "$skill_dir")
+    if (( SKILL_CRITICAL[$slug] + SKILL_HIGH[$slug] + SKILL_MEDIUM[$slug] == 0 )); then
+      log_pass "$slug: Clean"
+    fi
+  done
+
+  echo ""
+  echo -e "${BOLD}Scan Results:${RESET}"
+  echo -e "  Total findings: ${FINDING_COUNT}"
+  echo -e "  ${RED}Critical: ${CRITICAL_COUNT}${RESET}"
+  echo -e "  ${YELLOW}High: ${HIGH_COUNT}${RESET}"
+  echo -e "  ${BLUE}Medium: ${MEDIUM_COUNT}${RESET}"
+  echo -e "  ${GREEN}Clean skills: ${PASS_COUNT}${RESET}"
+  echo ""
+}
+
+render_summary() {
+  for skill_dir in "${skills[@]}"; do
+    slug=$(get_skill_slug "$skill_dir")
+    local c=${SKILL_CRITICAL[$slug]} h=${SKILL_HIGH[$slug]} m=${SKILL_MEDIUM[$slug]}
+    if (( c + h + m == 0 )); then
+      echo "PASS $slug"
+    else
+      local parts=()
+      (( c > 0 )) && parts+=("${c}C")
+      (( h > 0 )) && parts+=("${h}H")
+      (( m > 0 )) && parts+=("${m}M")
+      echo "FAIL $slug ($(IFS=', '; echo "${parts[*]}"))"
+    fi
+  done
+}
+
+# Escape a string for safe JSON embedding
+json_escape() {
+  local s="$1"
+  s="${s//\\/\\\\}"
+  s="${s//\"/\\\"}"
+  s="${s//$'\n'/\\n}"
+  s="${s//$'\r'/}"
+  s="${s//$'\t'/\\t}"
+  printf '%s' "$s"
+}
+
+render_json() {
+  echo '{'
+  echo '  "scanner": "clawhub-lab-skill-scan",'
+  echo '  "version": "2.0.0",'
+  echo "  \"patternCount\": ${#SCAN_PATTERNS[@]},"
+  echo "  \"skillsScanned\": ${#skills[@]},"
+  echo '  "summary": {'
+  echo "    \"total\": ${FINDING_COUNT},"
+  echo "    \"critical\": ${CRITICAL_COUNT},"
+  echo "    \"high\": ${HIGH_COUNT},"
+  echo "    \"medium\": ${MEDIUM_COUNT},"
+  echo "    \"clean\": ${PASS_COUNT}"
+  echo '  },'
+  echo '  "findings": ['
+
+  local i=0
+  for finding in "${FINDINGS[@]+"${FINDINGS[@]}"}"; do
+    IFS='|' read -r slug severity category line_num description context mitre_id cve_ids <<< "$finding"
+    (( i > 0 )) && echo ','
+    local esc_desc esc_ctx
+    esc_desc=$(json_escape "$description")
+    esc_ctx=$(json_escape "$context")
+    printf '    {"skill":"%s","severity":"%s","category":"%s","line":%s,"description":"%s","context":"%s","mitreId":"%s","cveIds":"%s"}' \
+      "$slug" "$severity" "$category" "$line_num" "$esc_desc" "$esc_ctx" "${mitre_id:-}" "${cve_ids:-}"
+    i=$((i + 1))
+  done
+
+  echo ''
+  echo '  ],'
+  echo "  \"blocked\": $(( CRITICAL_COUNT > 0 ? 1 : 0 ))"
+  echo '}'
+}
+
+render_sarif() {
+  local py
+  py=$(command -v python3 2>/dev/null || command -v python 2>/dev/null) || {
+    echo "Error: Python not found (needed for SARIF output)" >&2; exit 1
+  }
+  "$py" "$SCRIPT_DIR/lib/sarif_formatter.py" < <(render_json)
+}
+
+case "$FORMAT" in
+  default) render_default ;;
+  summary) render_summary ;;
+  json)    render_json ;;
+  sarif)   render_sarif ;;
+  *)
+    echo "Unknown format: $FORMAT (use default, summary, json, sarif)"
+    exit 1
+    ;;
+esac
 
 if (( CRITICAL_COUNT > 0 )); then
-  echo -e "${RED}BLOCKED: ${CRITICAL_COUNT} critical finding(s). Review and allowlist or fix.${RESET}"
-  echo "  Use '# scan:ignore-next-line' or a .scanignore file to allowlist expected patterns."
+  if [[ "$FORMAT" == "default" ]]; then
+    echo -e "${RED}BLOCKED: ${CRITICAL_COUNT} critical finding(s). Review and allowlist or fix.${RESET}"
+    echo "  Use '# scan:ignore-next-line' or a .scanignore file to allowlist expected patterns."
+  fi
   exit 1
 fi
