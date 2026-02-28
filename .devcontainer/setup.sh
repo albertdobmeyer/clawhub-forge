@@ -29,6 +29,7 @@ fi
 if [[ "${1:-}" == "install" && "${ALLOW_INSTALL:-0}" == "1" ]]; then
   LAB_ROOT="${CLAWHUB_LAB_ROOT:-/workspaces/clawhub-lab}"
   SCANNER="$LAB_ROOT/tools/skill-scan.sh"
+  VERIFIER="$LAB_ROOT/tools/skill-verify.sh"
   SKILLS_DIR="$LAB_ROOT/skills"
 
   # Snapshot skill directories before install
@@ -67,7 +68,24 @@ if [[ "${1:-}" == "install" && "${ALLOW_INSTALL:-0}" == "1" ]]; then
 
     if [[ -f "$SCANNER" ]]; then
       if bash "$SCANNER" --strict "$new_dir" 2>/dev/null; then
-        echo "  CLEAN: $slug passed scanner"
+        echo "  PASS: $slug passed blocklist scan"
+        # Stage 2: Zero-trust verification (allowlist check)
+        if [[ -f "$VERIFIER" ]]; then
+          if bash "$VERIFIER" --strict "$new_dir" 2>/dev/null; then
+            echo "  VERIFIED: $slug passed zero-trust verification"
+          else
+            ALL_CLEAN=false
+            TIMESTAMP=$(date +%Y%m%d-%H%M%S)
+            QUARANTINE_PATH="$QUARANTINE_DIR/${slug}-${TIMESTAMP}"
+            mkdir -p "$QUARANTINE_DIR"
+            mv "$new_dir" "$QUARANTINE_PATH"
+            echo ""
+            echo "  QUARANTINED: $slug failed zero-trust verification"
+            echo "  Review: bash $VERIFIER --report $QUARANTINE_PATH"
+            continue
+          fi
+        fi
+        echo "  CLEAN: $slug passed all checks"
       else
         ALL_CLEAN=false
         TIMESTAMP=$(date +%Y%m%d-%H%M%S)

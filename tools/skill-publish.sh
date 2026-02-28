@@ -5,6 +5,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib/common.sh"
+source "$SCRIPT_DIR/lib/trust-manifest.sh"
 
 SKILL_NAME="${1:-}"
 VERSION="${2:-}"
@@ -32,7 +33,7 @@ log_header "Publishing $SKILL_NAME@$VERSION"
 echo ""
 
 # Gate 1: Lint
-echo -e "${BOLD}Step 1/4: Lint${RESET}"
+echo -e "${BOLD}Step 1/5: Lint${RESET}"
 if ! bash "$SCRIPT_DIR/skill-lint.sh" "$SKILL_DIR"; then
   echo ""
   echo -e "${RED}BLOCKED: Lint failed. Fix issues before publishing.${RESET}"
@@ -41,16 +42,25 @@ fi
 
 # Gate 2: Scan
 echo ""
-echo -e "${BOLD}Step 2/4: Security Scan${RESET}"
+echo -e "${BOLD}Step 2/5: Security Scan${RESET}"
 if ! bash "$SCRIPT_DIR/skill-scan.sh" "$SKILL_DIR"; then
   echo ""
   echo -e "${RED}BLOCKED: Security scan found critical issues. Fix or allowlist before publishing.${RESET}"
   exit 1
 fi
 
-# Gate 3: Test (if test file exists)
+# Gate 3: Zero-trust verification
 echo ""
-echo -e "${BOLD}Step 3/4: Tests${RESET}"
+echo -e "${BOLD}Step 3/5: Zero-Trust Verification${RESET}"
+if ! bash "$SCRIPT_DIR/skill-verify.sh" --strict "$SKILL_DIR"; then
+  echo ""
+  echo -e "${RED}BLOCKED: Zero-trust verification failed. Every line must be classifiable as safe.${RESET}"
+  exit 1
+fi
+
+# Gate 4: Test (if test file exists)
+echo ""
+echo -e "${BOLD}Step 4/5: Tests${RESET}"
 if [[ ! -f "$REPO_ROOT/tests/${SKILL_NAME}.test.sh" ]]; then
   echo ""
   echo -e "${RED}BLOCKED: No test file found (tests/${SKILL_NAME}.test.sh).${RESET}"
@@ -63,9 +73,13 @@ if ! bash "$SCRIPT_DIR/skill-test.sh" "$SKILL_NAME"; then
   exit 1
 fi
 
-# Gate 4: Publish
+# Generate trust manifest after verification passes
+generate_trust_manifest "$SKILL_DIR"
+log_pass "Trust manifest generated: $SKILL_DIR/.trust"
+
+# Gate 5: Publish
 echo ""
-echo -e "${BOLD}Step 4/4: Publish${RESET}"
+echo -e "${BOLD}Step 5/5: Publish${RESET}"
 
 # Extract display name from H1 heading
 DISPLAY_NAME=$(get_skill_title "$SKILL_FILE")
