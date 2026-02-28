@@ -16,6 +16,55 @@ A complete development workbench for ClawHub skills. Twenty-five published skill
 
 ---
 
+## Why a Workbench?
+
+**"How is this better than just having Claude write a SKILL.md?"**
+
+An AI can draft a skill file in seconds. What it can't do is gate its own output through a security pipeline, track quality over time, or prove to a human operator that the result is safe. This workbench exists because the gap between "generated" and "production-ready" is where real risk lives.
+
+What the pipeline provides that raw authoring doesn't:
+
+- **47 malicious patterns actively blocked** — MITRE ATT&CK mapped, derived from real trojanized skills (the ClawHavoc campaign). Every skill is scanned offline before publishing.
+- **Behavioral assertions** — 168+ test assertions enforce content consistency, structural requirements, and domain accuracy across all skills.
+- **Gated publishing** — `make publish` won't run until lint, scan, and test all pass. No human judgment call required at the gate.
+- **SARIF output for CI** — GitHub code scanning integration via `make scan-sarif`, so the pipeline runs on every PR automatically.
+- **Transparent allowlisting** — skills that legitimately discuss security patterns (like `security-audit`) use explicit `.scanignore` files, not global suppression. Every exception is auditable.
+- **Trend tracking** — `make stats-trend` shows whether skills are growing or dying. `make stats-rank` shows competitive positioning.
+
+Run `make report` to see a concrete summary of what the pipeline catches.
+
+---
+
+## Operator Commands
+
+Commands for the human operator to assess workbench health and competitive position:
+
+```bash
+make verify                           # 12-point workbench health check
+make report                           # Pipeline value summary
+make explore                          # Top 20 skills by downloads
+make explore QUERY="docker"           # Semantic search for competitors
+make explore SORT=trending            # What's hot right now
+make explore SORT=installs LIMIT=50   # Most installed, larger set
+make stats                            # Current adoption metrics
+make stats-trend                      # Growth deltas vs previous snapshots
+make stats-rank                       # Our skills ranked against top 50
+```
+
+---
+
+## What's Not Here
+
+Transparency about what the workbench can't do:
+
+- **Who installed your skills** — the ClawHub API doesn't expose installer identities or per-user usage data. Download counts are the best signal available.
+- **Bot/agent network visibility** — no way to distinguish human installs from automated agent installs. The API doesn't differentiate.
+- **Web dashboard** — this is a CLI workbench; terminal tables are the right UX for the workflow. If you want a GUI, see the roadmap for the planned meta-repo.
+- **Skill dependencies** — ClawHub has no dependency resolution. Skills are standalone by design.
+- **Auto-version bumping** — too risky without human review. Version is always an explicit `VERSION=x.y.z` parameter.
+
+---
+
 ## Quick Start
 
 ### Option A: VS Code Dev Containers
@@ -180,13 +229,17 @@ clawhub-lab/
     skill-lint.sh                   # Linter
     skill-scan.sh                   # Offline security scanner
     skill-test.sh                   # Test runner wrapper
-    skill-new.sh                    # Skill scaffolder
+    skill-new.sh                    # Skill scaffolder (creates skill + test)
     skill-publish.sh                # Gated publisher
-    skill-stats.sh                  # Adoption metrics fetcher
+    skill-stats.sh                  # Adoption metrics with trends + ranking
+    registry-explore.sh             # Registry browsing + competitive search
+    workbench-verify.sh             # 12-point health verification
+    pipeline-report.sh              # Pipeline value summary
   templates/                        # Skill templates
     cli-tool/SKILL.md               # CLI/tool reference template
     workflow/SKILL.md               # Process/methodology template
     language-ref/SKILL.md           # Language/syntax reference template
+    _test.template.sh               # Auto-generated test file template
   tests/                            # Behavioral tests
     _framework/
       runner.sh                     # Test file discovery + execution
