@@ -51,14 +51,16 @@ fi
 # Gate 3: Test (if test file exists)
 echo ""
 echo -e "${BOLD}Step 3/4: Tests${RESET}"
-if [[ -f "$REPO_ROOT/tests/${SKILL_NAME}.test.sh" ]]; then
-  if ! bash "$SCRIPT_DIR/skill-test.sh" "$SKILL_NAME"; then
-    echo ""
-    echo -e "${RED}BLOCKED: Tests failed. Fix before publishing.${RESET}"
-    exit 1
-  fi
-else
-  echo "  No test file found (tests/${SKILL_NAME}.test.sh). Skipping."
+if [[ ! -f "$REPO_ROOT/tests/${SKILL_NAME}.test.sh" ]]; then
+  echo ""
+  echo -e "${RED}BLOCKED: No test file found (tests/${SKILL_NAME}.test.sh).${RESET}"
+  echo "  Every skill must have a test file to publish. Run: make new SKILL=$SKILL_NAME"
+  exit 1
+fi
+if ! bash "$SCRIPT_DIR/skill-test.sh" "$SKILL_NAME"; then
+  echo ""
+  echo -e "${RED}BLOCKED: Tests failed. Fix before publishing.${RESET}"
+  exit 1
 fi
 
 # Gate 4: Publish

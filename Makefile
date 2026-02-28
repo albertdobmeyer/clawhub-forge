@@ -1,4 +1,4 @@
-.PHONY: help new lint lint-one scan scan-one scan-json scan-sarif scan-summary test test-one publish stats stats-trend stats-rank check self-test verify explore report clean
+.PHONY: help new lint lint-one scan scan-one scan-json scan-sarif scan-summary scan-strict test test-one test-tools publish stats stats-trend stats-rank check check-all self-test verify explore report clean
 
 SHELL := /bin/bash
 SKILLS_DIR := skills
@@ -38,6 +38,9 @@ scan-sarif: ## Scan all skills, SARIF 2.1.0 output
 scan-summary: ## Scan all skills, one-line summary output
 	@bash $(TOOLS_DIR)/skill-scan.sh --summary $(SKILLS_DIR)
 
+scan-strict: ## Scan with --strict (HIGH findings block)
+	@bash $(TOOLS_DIR)/skill-scan.sh --strict $(SKILLS_DIR)
+
 self-test: ## Run scanner self-test (known-bad/clean/allowlisted)
 	@bash $(TESTS_DIR)/scanner-self-test/run.sh
 
@@ -46,6 +49,9 @@ test: ## Run skill behavioral tests
 
 test-one: ## Test single skill (SKILL=name)
 	@bash $(TOOLS_DIR)/skill-test.sh $(SKILL)
+
+test-tools: ## Run tool behavioral tests
+	@bash $(TESTS_DIR)/_framework/tool-runner.sh
 
 publish: ## Lint + scan + test + publish (SKILL=name VERSION=x.y.z)
 	@bash $(TOOLS_DIR)/skill-publish.sh "$(SKILL)" "$(VERSION)"
@@ -76,6 +82,22 @@ check: ## Full pipeline: lint + scan + test
 	@bash $(TOOLS_DIR)/skill-test.sh
 	@echo ""
 	@echo "=== Pipeline complete ==="
+
+check-all: ## Full pipeline + self-test + tool tests
+	@echo ""
+	@echo "=== Running full pipeline + all tests ==="
+	@echo ""
+	@bash $(TOOLS_DIR)/skill-lint.sh $(SKILLS_DIR)
+	@echo ""
+	@bash $(TOOLS_DIR)/skill-scan.sh $(SKILLS_DIR)
+	@echo ""
+	@bash $(TOOLS_DIR)/skill-test.sh
+	@echo ""
+	@bash $(TESTS_DIR)/scanner-self-test/run.sh
+	@echo ""
+	@bash $(TESTS_DIR)/_framework/tool-runner.sh
+	@echo ""
+	@echo "=== All checks complete ==="
 
 report: ## Pipeline value report — what the workbench catches
 	@bash $(TOOLS_DIR)/pipeline-report.sh

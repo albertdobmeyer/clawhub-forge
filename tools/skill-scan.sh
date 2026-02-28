@@ -9,6 +9,7 @@ source "$SCRIPT_DIR/lib/patterns.sh"
 
 # ── Parse arguments ──
 FORMAT="default"
+STRICT=false
 TARGET=""
 for arg in "$@"; do
   case "$arg" in
@@ -16,6 +17,7 @@ for arg in "$@"; do
     --summary)  FORMAT="summary" ;;
     --json)     FORMAT="json" ;;
     --sarif)    FORMAT="sarif" ;;
+    --strict)   STRICT=true ;;
     *)          TARGET="$arg" ;;
   esac
 done
@@ -55,12 +57,12 @@ is_ignored() {
   local line
   line=$(sed -n "${line_num}p" "$file")
 
-  # Check inline ignore comment
-  if echo "$line" | grep -q '# scan:ignore-next-line\|<!-- scan:ignore -->'; then
+  # Same-line inline suppression ONLY (not ignore-next-line — prevents self-suppression)
+  if echo "$line" | grep -q '<!-- scan:ignore -->'; then
     return 0
   fi
 
-  # Check previous line for scan:ignore-next-line
+  # Previous line ONLY for ignore-next-line (a malicious line cannot suppress itself)
   if (( line_num > 1 )); then
     local prev_line
     prev_line=$(sed -n "$(( line_num - 1 ))p" "$file")
@@ -95,49 +97,112 @@ is_ignored() {
   return 1
 }
 
+# ── Scanignore audit ──
+SCANIGNORE_AUDIT_FAIL=0
+
+audit_scanignore() {
+  local scanignore="$1" skill_dir="$2"
+  local slug
+  slug=$(get_skill_slug "$skill_dir")
+  [[ -f "$scanignore" ]] || return 0
+
+  while IFS= read -r range; do
+    range="${range%%$'\r'}"
+    [[ "$range" =~ ^#.*$ || -z "$range" ]] && continue
+
+    # Validate format
+    if [[ "$range" =~ ^L([0-9]+)-L([0-9]+)$ ]]; then
+      local start="${BASH_REMATCH[1]}" end="${BASH_REMATCH[2]}"
+      local span=$(( end - start + 1 ))
+      if (( span > 50 )); then
+        echo "  SCANIGNORE_AUDIT_FAIL: $slug/.scanignore — range L${start}-L${end} spans $span lines (max 50)" >&2
+        SCANIGNORE_AUDIT_FAIL=$((SCANIGNORE_AUDIT_FAIL + 1))
+      fi
+    elif [[ "$range" =~ ^L([0-9]+)$ ]]; then
+      : # Single line — valid
+    else
+      echo "  SCANIGNORE_AUDIT_FAIL: $slug/.scanignore — invalid format: $range" >&2
+      SCANIGNORE_AUDIT_FAIL=$((SCANIGNORE_AUDIT_FAIL + 1))
+    fi
+  done < "$scanignore"
+}
+
+# ── Scannable file extensions ──
+SCAN_EXTENSIONS=("*.md" "*.sh" "*.py" "*.js" "*.ts" "*.yaml" "*.yml" "*.json")
+
+discover_scan_files() {
+  local skill_dir="$1"
+  for ext in "${SCAN_EXTENSIONS[@]}"; do
+    find "$skill_dir" -maxdepth 2 -name "$ext" -type f 2>/dev/null
+  done | sort -u
+}
+
 # ── Collect phase ──
 # Per-skill summary for --summary mode
 declare -A SKILL_CRITICAL SKILL_HIGH SKILL_MEDIUM
 
 for skill_dir in "${skills[@]}"; do
-  file="$skill_dir/SKILL.md"
   slug=$(get_skill_slug "$skill_dir")
   SKILL_CRITICAL[$slug]=0
   SKILL_HIGH[$slug]=0
   SKILL_MEDIUM[$slug]=0
 
-  for pattern_def in "${SCAN_PATTERNS[@]}"; do
-    IFS='|' read -r severity category regex description mitre_id cve_ids <<< "$pattern_def"
+  # Audit .scanignore
+  audit_scanignore "$skill_dir/.scanignore" "$skill_dir"
 
-    while IFS=: read -r line_num match_line; do
-      [[ -z "$line_num" ]] && continue
+  # Scan ALL matching files in the skill directory
+  scan_files=()
+  while IFS= read -r f; do
+    [[ -n "$f" ]] && scan_files+=("$f")
+  done < <(discover_scan_files "$skill_dir")
 
-      if is_ignored "$file" "$line_num" "$skill_dir"; then
-        continue
+  # Fallback: if no files found but SKILL.md exists, scan it
+  if (( ${#scan_files[@]} == 0 )) && [[ -f "$skill_dir/SKILL.md" ]]; then
+    scan_files=("$skill_dir/SKILL.md")
+  fi
+
+  for file in "${scan_files[@]}"; do
+    rel_file="${file#"$skill_dir/"}"
+
+    for pattern_def in "${SCAN_PATTERNS[@]}"; do
+      IFS='|' read -r severity category regex description mitre_id cve_ids flags <<< "$pattern_def"
+
+      # Determine grep flags based on pattern flags field
+      grep_flags="-nE"
+      if [[ "${flags:-}" == *i* ]]; then
+        grep_flags="-inE"
       fi
 
-      FINDING_COUNT=$((FINDING_COUNT + 1))
-      context=$(echo "$match_line" | head -c 120)
+      while IFS=: read -r line_num match_line; do
+        [[ -z "$line_num" ]] && continue
 
-      # Store finding
-      FINDINGS+=("${slug}|${severity}|${category}|${line_num}|${description}|${context}|${mitre_id:-}|${cve_ids:-}")
+        if is_ignored "$file" "$line_num" "$skill_dir"; then
+          continue
+        fi
 
-      case "$severity" in
-        CRITICAL)
-          CRITICAL_COUNT=$((CRITICAL_COUNT + 1))
-          SKILL_CRITICAL[$slug]=$(( ${SKILL_CRITICAL[$slug]} + 1 ))
-          ;;
-        HIGH)
-          HIGH_COUNT=$((HIGH_COUNT + 1))
-          SKILL_HIGH[$slug]=$(( ${SKILL_HIGH[$slug]} + 1 ))
-          ;;
-        *)
-          MEDIUM_COUNT=$((MEDIUM_COUNT + 1))
-          SKILL_MEDIUM[$slug]=$(( ${SKILL_MEDIUM[$slug]} + 1 ))
-          ;;
-      esac
+        FINDING_COUNT=$((FINDING_COUNT + 1))
+        context=$(echo "$match_line" | head -c 120)
 
-    done < <(grep -nE "$regex" "$file" 2>/dev/null || true)
+        # Store finding (includes rel_file for multi-file output)
+        FINDINGS+=("${slug}|${severity}|${category}|${line_num}|${description}|${context}|${mitre_id:-}|${cve_ids:-}|${rel_file}")
+
+        case "$severity" in
+          CRITICAL)
+            CRITICAL_COUNT=$((CRITICAL_COUNT + 1))
+            SKILL_CRITICAL[$slug]=$(( ${SKILL_CRITICAL[$slug]} + 1 ))
+            ;;
+          HIGH)
+            HIGH_COUNT=$((HIGH_COUNT + 1))
+            SKILL_HIGH[$slug]=$(( ${SKILL_HIGH[$slug]} + 1 ))
+            ;;
+          *)
+            MEDIUM_COUNT=$((MEDIUM_COUNT + 1))
+            SKILL_MEDIUM[$slug]=$(( ${SKILL_MEDIUM[$slug]} + 1 ))
+            ;;
+        esac
+
+      done < <(grep $grep_flags "$regex" "$file" 2>/dev/null || true)
+    done
   done
 
   if (( SKILL_CRITICAL[$slug] + SKILL_HIGH[$slug] + SKILL_MEDIUM[$slug] == 0 )); then
@@ -150,17 +215,18 @@ done
 render_default() {
   local current_slug=""
   for finding in "${FINDINGS[@]+"${FINDINGS[@]}"}"; do
-    IFS='|' read -r slug severity category line_num description context mitre_id cve_ids <<< "$finding"
+    IFS='|' read -r slug severity category line_num description context mitre_id cve_ids rel_file <<< "$finding"
 
     if [[ "$slug" != "$current_slug" ]]; then
       echo -e "\n${CYAN}--- $slug ---${RESET}"
       current_slug="$slug"
     fi
 
+    local loc="${rel_file:-SKILL.md}:L${line_num}"
     case "$severity" in
-      CRITICAL) echo -e "  ${RED}CRITICAL${RESET} [${category}] L${line_num}: ${description}" ;;
-      HIGH)     echo -e "  ${YELLOW}HIGH${RESET}     [${category}] L${line_num}: ${description}" ;;
-      *)        echo -e "  ${BLUE}MEDIUM${RESET}   [${category}] L${line_num}: ${description}" ;;
+      CRITICAL) echo -e "  ${RED}CRITICAL${RESET} [${category}] ${loc}: ${description}" ;;
+      HIGH)     echo -e "  ${YELLOW}HIGH${RESET}     [${category}] ${loc}: ${description}" ;;
+      *)        echo -e "  ${BLUE}MEDIUM${RESET}   [${category}] ${loc}: ${description}" ;;
     esac
     echo -e "           ${DIM}${context}${RESET}"
   done
@@ -180,6 +246,9 @@ render_default() {
   echo -e "  ${YELLOW}High: ${HIGH_COUNT}${RESET}"
   echo -e "  ${BLUE}Medium: ${MEDIUM_COUNT}${RESET}"
   echo -e "  ${GREEN}Clean skills: ${PASS_COUNT}${RESET}"
+  if (( SCANIGNORE_AUDIT_FAIL > 0 )); then
+    echo -e "  ${YELLOW}Scanignore audit failures: ${SCANIGNORE_AUDIT_FAIL}${RESET}"
+  fi
   echo ""
 }
 
@@ -227,19 +296,22 @@ render_json() {
 
   local i=0
   for finding in "${FINDINGS[@]+"${FINDINGS[@]}"}"; do
-    IFS='|' read -r slug severity category line_num description context mitre_id cve_ids <<< "$finding"
+    IFS='|' read -r slug severity category line_num description context mitre_id cve_ids rel_file <<< "$finding"
     (( i > 0 )) && echo ','
     local esc_desc esc_ctx
     esc_desc=$(json_escape "$description")
     esc_ctx=$(json_escape "$context")
-    printf '    {"skill":"%s","severity":"%s","category":"%s","line":%s,"description":"%s","context":"%s","mitreId":"%s","cveIds":"%s"}' \
-      "$slug" "$severity" "$category" "$line_num" "$esc_desc" "$esc_ctx" "${mitre_id:-}" "${cve_ids:-}"
+    printf '    {"skill":"%s","severity":"%s","category":"%s","line":%s,"file":"%s","description":"%s","context":"%s","mitreId":"%s","cveIds":"%s"}' \
+      "$slug" "$severity" "$category" "$line_num" "${rel_file:-SKILL.md}" "$esc_desc" "$esc_ctx" "${mitre_id:-}" "${cve_ids:-}"
     i=$((i + 1))
   done
 
   echo ''
   echo '  ],'
-  echo "  \"blocked\": $(( CRITICAL_COUNT > 0 ? 1 : 0 ))"
+  local blocked=0
+  if (( CRITICAL_COUNT > 0 )); then blocked=1; fi
+  if [[ "$STRICT" == true ]] && (( HIGH_COUNT > 0 || SCANIGNORE_AUDIT_FAIL > 0 )); then blocked=1; fi
+  echo "  \"blocked\": $blocked"
   echo '}'
 }
 
@@ -262,10 +334,26 @@ case "$FORMAT" in
     ;;
 esac
 
+# In --strict mode, scanignore audit failures also block
+if [[ "$STRICT" == true ]] && (( SCANIGNORE_AUDIT_FAIL > 0 )); then
+  if [[ "$FORMAT" == "default" ]]; then
+    echo -e "${RED}BLOCKED (strict): ${SCANIGNORE_AUDIT_FAIL} scanignore audit failure(s).${RESET}"
+  fi
+  exit 1
+fi
+
 if (( CRITICAL_COUNT > 0 )); then
   if [[ "$FORMAT" == "default" ]]; then
     echo -e "${RED}BLOCKED: ${CRITICAL_COUNT} critical finding(s). Review and allowlist or fix.${RESET}"
     echo "  Use '# scan:ignore-next-line' or a .scanignore file to allowlist expected patterns."
+  fi
+  exit 1
+fi
+
+# In --strict mode, HIGH findings also block
+if [[ "$STRICT" == true ]] && (( HIGH_COUNT > 0 )); then
+  if [[ "$FORMAT" == "default" ]]; then
+    echo -e "${RED}BLOCKED (strict): ${HIGH_COUNT} high finding(s). Use --strict to enforce HIGH blocking.${RESET}"
   fi
   exit 1
 fi
