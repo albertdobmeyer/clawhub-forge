@@ -62,6 +62,9 @@ stats-rank: ## Our skills ranked against registry top 50
 explore: ## Browse registry top skills (QUERY=term SORT=downloads|trending|installs LIMIT=n)
 	@bash $(TOOLS_DIR)/registry-explore.sh $(if $(QUERY),"$(QUERY)") $(if $(SORT),--sort=$(SORT)) $(if $(LIMIT),--limit=$(LIMIT))
 
+verify: ## 12-point workbench health verification
+	@bash $(TOOLS_DIR)/workbench-verify.sh
+
 check: ## Full pipeline: lint + scan + test
 	@echo ""
 	@echo "=== Running full pipeline ==="
