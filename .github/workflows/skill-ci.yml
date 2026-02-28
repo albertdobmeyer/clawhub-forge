@@ -66,6 +66,19 @@ jobs:
             echo "::warning::Test coverage incomplete: $test_count tests for $skill_count skills"
           fi
 
+  tool-tests:
+    name: Tool Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Run tool tests
+        run: make test-tools
+      - name: Run scanner self-test
+        run: make self-test
+
   # Publish step (sketch — full auto-publish with version detection is a follow-up)
   # publish:
   #   name: Publish
