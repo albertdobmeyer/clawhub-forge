@@ -49,19 +49,27 @@ SKILL_TITLE=$(echo "$SKILL_NAME" | sed 's/-/ /g' | sed 's/\b\(.\)/\u\1/g')
 mkdir -p "$SKILL_DIR"
 cp "$TEMPLATE_DIR/SKILL.md" "$SKILL_DIR/SKILL.md"
 
-# Replace placeholders
+# Replace placeholders in SKILL.md
 sed -i "s/{{SKILL_NAME}}/$SKILL_NAME/g" "$SKILL_DIR/SKILL.md"
 sed -i "s/{{SKILL_TITLE}}/$SKILL_TITLE/g" "$SKILL_DIR/SKILL.md"
+
+# Generate test file from template
+TEST_FILE="$REPO_ROOT/tests/${SKILL_NAME}.test.sh"
+TEST_TEMPLATE="$REPO_ROOT/templates/_test.template.sh"
+if [[ -f "$TEST_TEMPLATE" && ! -f "$TEST_FILE" ]]; then
+  cp "$TEST_TEMPLATE" "$TEST_FILE"
+  sed -i "s/{{SKILL_NAME}}/$SKILL_NAME/g" "$TEST_FILE"
+fi
 
 echo ""
 echo -e "${GREEN}Created skill: $SKILL_NAME${RESET}"
 echo -e "  Type:     $SKILL_TYPE"
-echo -e "  Path:     skills/$SKILL_NAME/SKILL.md"
+echo -e "  Skill:    skills/$SKILL_NAME/SKILL.md"
+echo -e "  Test:     tests/$SKILL_NAME.test.sh"
 echo -e "  Template: templates/$SKILL_TYPE/SKILL.md"
 echo ""
 echo "Next steps:"
 echo "  1. Edit skills/$SKILL_NAME/SKILL.md"
-echo "  2. Replace all TODO lines with real content"
-echo "  3. Run: make lint-one SKILL=$SKILL_NAME"
-echo "  4. Run: make scan-one SKILL=$SKILL_NAME"
+echo "  2. Edit tests/$SKILL_NAME.test.sh — add domain-specific tests"
+echo "  3. Run: make check SKILL=$SKILL_NAME"
 echo ""
