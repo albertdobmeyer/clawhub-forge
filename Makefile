@@ -77,6 +77,9 @@ check: ## Full pipeline: lint + scan + test
 	@echo ""
 	@echo "=== Pipeline complete ==="
 
+report: ## Pipeline value report — what the workbench catches
+	@bash $(TOOLS_DIR)/pipeline-report.sh
+
 clean: ## Remove generated cache files
 	@rm -rf .workbench-cache
 	@echo "Cache cleaned."
