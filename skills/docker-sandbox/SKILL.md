@@ -223,6 +223,15 @@ docker sandbox network proxy secure --allow-host github.com
 docker sandbox run secure -- -p "Review this code for security issues"
 ```
 
+## Tips
+
+- Always name your sandboxes (`docker sandbox create my-project`) — unnamed sandboxes are hard to track and clean up
+- Mount only the directory you need, not your entire home folder — the agent can read anything you mount
+- Use `docker sandbox stop` before switching branches — the sandbox filesystem doesn't track git state
+- The network proxy only intercepts HTTP/HTTPS — raw TCP connections (databases, SSH) bypass it entirely
+- Prefer `docker sandbox exec` over `docker exec` — the sandbox wrapper handles path translation and environment setup
+- Check `docker sandbox ls` regularly — orphaned sandboxes consume disk and memory silently
+
 ## Troubleshooting
 
 ### "client version X is too old"

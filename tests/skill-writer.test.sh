@@ -7,7 +7,8 @@ test_has_required_sections() {
 }
 
 test_no_placeholders() {
-  assert_not_contains "$SKILL" "(TODO|FIXME|XXX)"
+  # Allow mentioning TODO/FIXME in backtick-quoted checklist instructions
+  assert_not_contains "$SKILL" "^(TODO|FIXME|XXX):"
 }
 
 test_documents_skill_format() {

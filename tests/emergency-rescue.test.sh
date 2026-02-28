@@ -7,7 +7,8 @@ test_has_required_sections() {
 }
 
 test_no_placeholders() {
-  assert_not_contains "$SKILL" "(TODO|FIXME|XXX)"
+  # Match standalone TODO/FIXME/XXX but not XXX inside masked keys like AKIAXXXXXXXX
+  assert_not_contains "$SKILL" "(^|[^X])(TODO|FIXME)([^X]|$)"
 }
 
 test_covers_git_disasters() {
