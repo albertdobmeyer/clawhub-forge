@@ -8,7 +8,7 @@ The Skill Development Workbench for [ClawHub](https://clawdhub.com). An offline-
 
 ## What Is This
 
-A complete development workbench for ClawHub skills. Twenty-five published skills, a linter, an offline security scanner (47 patterns, 12 categories, SARIF output), a test framework (100% coverage), and a gated publishing pipeline — all driven from a single Makefile.
+A complete development workbench for ClawHub skills. Twenty-five published skills, a linter, an offline security scanner (87 patterns, 13 categories including prompt injection detection, SARIF output), a test framework (100% coverage), and a gated publishing pipeline — all driven from a single Makefile.
 
 **What you can do here:** scaffold new skills from templates, lint them for structure and content quality, scan them for malicious patterns (offline, no network required), run behavioral tests, and publish through a gated pipeline.
 
@@ -24,11 +24,18 @@ An AI can draft a skill file in seconds. What it can't do is gate its own output
 
 What the pipeline provides that raw authoring doesn't:
 
-- **47 malicious patterns actively blocked** — MITRE ATT&CK mapped, derived from real trojanized skills (the ClawHavoc campaign). Every skill is scanned offline before publishing.
+- **71 malicious patterns across 13 categories** — MITRE ATT&CK mapped, derived from real trojanized skills (the ClawHavoc campaign). Every skill is scanned offline before publishing.
+- **Prompt injection detection** — 16 patterns detect LLM manipulation attempts: override instructions, persona hijacking, stealth commands, data theft instructions, and format token injection.
+- **Multi-file scanning** — the scanner inspects ALL files in skill directories (`.md`, `.sh`, `.py`, `.js`, `.ts`, `.yaml`, `.yml`, `.json`), not just `SKILL.md`.
+- **Strict mode** — `make scan-strict` blocks HIGH findings too, not just CRITICAL. Prevents ssh key theft, persistence, and container escape patterns from slipping through.
+- **Post-install quarantine** — when `ALLOW_INSTALL=1` is used, the scanner auto-runs on newly installed skills and quarantines failures.
+- **Suppression audit** — `.scanignore` files are validated: ranges >50 lines are rejected (prevents `L1-L9999` blanket suppression).
 - **Behavioral assertions** — 168+ test assertions enforce content consistency, structural requirements, and domain accuracy across all skills.
+- **Mandatory test gate** — every skill must have a test file to publish. No more silent test skipping.
 - **Gated publishing** — `make publish` won't run until lint, scan, and test all pass. No human judgment call required at the gate.
 - **SARIF output for CI** — GitHub code scanning integration via `make scan-sarif`, so the pipeline runs on every PR automatically.
 - **Transparent allowlisting** — skills that legitimately discuss security patterns (like `security-audit`) use explicit `.scanignore` files, not global suppression. Every exception is auditable.
+- **Tool test suite** — 40+ behavioral tests verify the workbench tools themselves (`make test-tools`).
 - **Trend tracking** — `make stats-trend` shows whether skills are growing or dying. `make stats-rank` shows competitive positioning.
 
 Run `make report` to see a concrete summary of what the pipeline catches.
@@ -42,6 +49,9 @@ Commands for the human operator to assess workbench health and competitive posit
 ```bash
 make verify                           # 12-point workbench health check
 make report                           # Pipeline value summary
+make scan-strict                      # Scan with --strict (HIGH blocks)
+make test-tools                       # Run tool behavioral tests
+make check-all                        # Full pipeline + self-test + tool tests
 make explore                          # Top 20 skills by downloads
 make explore QUERY="docker"           # Semantic search for competitors
 make explore SORT=trending            # What's hot right now
@@ -98,26 +108,27 @@ Automates skill quality review. Checks:
 
 ### Scanner (`make scan`)
 
-**Offline security scanner** — works without network. 47 patterns across 12 categories with MITRE ATT&CK IDs, derived from the real [moltbook-ay trojan](docs/research/security-report.md) and ClawHavoc campaign analysis.
+**Offline security scanner** — works without network. 87 patterns across 13 categories with MITRE ATT&CK IDs, derived from the real [moltbook-ay trojan](docs/research/security-report.md) and ClawHavoc campaign analysis. Scans ALL files in skill directories, not just SKILL.md.
 
 | Category | Severity | What it catches |
 |----------|----------|-----------------|
 | C2/Download | CRITICAL | curl/wget/fetch to external URLs |
 | Archive execution | CRITICAL | Password-protected ZIP/7z extraction |
 | Exec download | CRITICAL | chmod+execute, bash -c with curl, eval with subshell |
-| Credential access | HIGH | Reading .env, .ssh/id_rsa, printenv |
-| Data exfiltration | CRITICAL | curl POST with variable data, netcat to IPs |
-| Obfuscation | HIGH | Base64-decode piped to shell, hex-encoded strings |
-| Persistence | HIGH | crontab modification, .bashrc/.profile appending |
-| Privilege escalation | MEDIUM | sudo chmod 777, chown root, setuid |
-| Container escape | HIGH | --privileged, SYS_ADMIN, mount host root |
+| Credential access | HIGH | Reading .env, .ssh keys, AWS/K8s creds, /proc/environ, PEM files |
+| Data exfiltration | CRITICAL | curl POST, netcat, DNS exfil, SCP, git push, FTP to IPs |
+| Obfuscation | HIGH | Base64/hex decode to shell, Python/Perl/Ruby eval, OpenSSL decrypt |
+| Persistence | HIGH | crontab, bashrc/profile/zshrc/fish, at now, launchctl |
+| Privilege escalation | MEDIUM-HIGH | sudo chmod 777, setuid, sudo su, nsenter |
+| Container escape | HIGH | --privileged, SYS_ADMIN, mount host, docker.sock, sysrq |
 | Supply chain | MEDIUM | Unsafe npm install, pip --pre, registry hijack |
 | Environment injection | MEDIUM | LD_PRELOAD, PATH manipulation, env -i |
 | Resource abuse | HIGH | Fork bomb, infinite loop with network |
+| **Prompt injection** | **HIGH-CRITICAL** | **Override attempts, persona hijacking, stealth instructions, data theft, LLM control tokens** |
 
-**Output modes:** `make scan` (colored terminal), `make scan-summary` (one-line per skill), `make scan-json` (structured JSON), `make scan-sarif` (SARIF 2.1.0 for GitHub code scanning). Scanner self-test: `make self-test`.
+**Output modes:** `make scan` (colored terminal), `make scan-summary` (one-line per skill), `make scan-json` (structured JSON), `make scan-sarif` (SARIF 2.1.0 for GitHub code scanning), `make scan-strict` (HIGH blocks too). Scanner self-test: `make self-test`.
 
-Skills that legitimately discuss these patterns (like `security-audit`) can use `# scan:ignore-next-line` inline or a `.scanignore` file.
+Skills that legitimately discuss these patterns (like `security-audit`) can use `<!-- scan:ignore -->` inline or a `.scanignore` file. Scanignore files are audited: ranges >50 lines are rejected.
 
 ### Test Framework (`make test`)
 
@@ -224,7 +235,7 @@ clawhub-lab/
     lib/
       common.sh                     # Colors, logging, skill discovery
       frontmatter.sh                # YAML frontmatter parser + validator
-      patterns.sh                   # Malicious pattern database (47 patterns, MITRE ATT&CK)
+      patterns.sh                   # Malicious pattern database (87 patterns, 13 categories, MITRE ATT&CK)
       sarif_formatter.py              # SARIF 2.1.0 output formatter
     skill-lint.sh                   # Linter
     skill-scan.sh                   # Offline security scanner
