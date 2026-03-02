@@ -1,0 +1,308 @@
+# yaml-language-server: $schema=../../schemas/component.schema.json
+
+identity:
+  id: clawhub-forge
+  name: ClawHub Forge
+  version: "0.1.0"
+  description: Skill development workbench and security scanner
+  role: toolchain
+  icon: hammer
+  color: "#3b82f6"
+  repo: https://github.com/gitgoodordietrying/clawhub-lab
+
+status:
+  states:
+    - id: ready
+      label: Ready
+      icon: circle-check
+      color: "#22c55e"
+    - id: not_setup
+      label: Not Set Up
+      icon: circle-help
+      color: "#a855f7"
+    - id: error
+      label: Error
+      icon: alert-triangle
+      color: "#ef4444"
+
+  probes:
+    - command: test -f Makefile && make workbench-verify --quiet 2>/dev/null && echo ready
+      interval_seconds: 30
+      timeout_seconds: 15
+      rules:
+        - stdout_contains: ready
+          state: ready
+        - exit_code: 2
+          state: error
+    - command: test -f Makefile && echo exists
+      interval_seconds: 60
+      timeout_seconds: 5
+      rules:
+        - stdout_contains: exists
+          state: not_setup
+        - exit_code: 1
+          state: not_setup
+
+  default_state: not_setup
+
+commands:
+  # Operations — Skill Development
+  - id: new-skill
+    name: New Skill
+    description: Scaffold a new ClawHub skill from template
+    group: operations
+    type: action
+    danger: safe
+    command: make new-skill SKILL_NAME=${skill_name}
+    args:
+      - id: skill_name
+        name: Skill Name
+        description: Name for the new skill (lowercase, hyphens allowed)
+        type: string
+        required: true
+    output:
+      format: ansi
+      display: terminal
+    sort_order: 10
+    timeout_seconds: 30
+
+  - id: lint
+    name: Lint Skill
+    description: Run linting checks on a skill
+    group: operations
+    type: query
+    danger: safe
+    command: make lint SKILL=${skill}
+    args:
+      - id: skill
+        name: Skill
+        description: Skill to lint
+        type: enum
+        required: true
+        options_from:
+          command: ls skills/ 2>/dev/null
+          timeout_seconds: 5
+    output:
+      format: ansi
+      display: checklist
+    sort_order: 20
+    timeout_seconds: 60
+
+  - id: scan
+    name: Security Scan
+    description: Run full security scan — 87 malicious patterns across 13 MITRE ATT&CK categories
+    group: operations
+    type: query
+    danger: safe
+    command: make scan SKILL=${skill}
+    args:
+      - id: skill
+        name: Skill
+        description: Skill to scan
+        type: enum
+        required: true
+        options_from:
+          command: ls skills/ 2>/dev/null
+          timeout_seconds: 5
+    output:
+      format: ansi
+      display: report
+    sort_order: 30
+    timeout_seconds: 120
+
+  - id: verify
+    name: Verify Skill
+    description: Full verification — lint + scan + tests
+    group: operations
+    type: query
+    danger: safe
+    command: make verify SKILL=${skill}
+    args:
+      - id: skill
+        name: Skill
+        description: Skill to verify
+        type: enum
+        required: true
+        options_from:
+          command: ls skills/ 2>/dev/null
+          timeout_seconds: 5
+    output:
+      format: ansi
+      display: checklist
+    sort_order: 40
+    timeout_seconds: 180
+
+  - id: test
+    name: Test Skill
+    description: Run test suite for a skill
+    group: operations
+    type: query
+    danger: safe
+    command: make test SKILL=${skill}
+    args:
+      - id: skill
+        name: Skill
+        description: Skill to test
+        type: enum
+        required: true
+        options_from:
+          command: ls skills/ 2>/dev/null
+          timeout_seconds: 5
+    output:
+      format: ansi
+      display: terminal
+    sort_order: 50
+    timeout_seconds: 120
+
+  - id: publish
+    name: Publish Skill
+    description: Publish a verified skill to the ClawHub registry
+    group: operations
+    type: action
+    danger: caution
+    command: make publish SKILL=${skill}
+    args:
+      - id: skill
+        name: Skill
+        description: Skill to publish
+        type: enum
+        required: true
+        options_from:
+          command: ls skills/ 2>/dev/null
+          timeout_seconds: 5
+    output:
+      format: ansi
+      display: terminal
+    sort_order: 60
+    timeout_seconds: 120
+
+  - id: lint-all
+    name: Lint All
+    description: Run linting on all skills
+    group: operations
+    type: query
+    danger: safe
+    command: make lint-all
+    output:
+      format: ansi
+      display: checklist
+    sort_order: 70
+    timeout_seconds: 300
+
+  - id: scan-all
+    name: Scan All
+    description: Security scan all skills
+    group: operations
+    type: query
+    danger: safe
+    command: make scan-all
+    output:
+      format: ansi
+      display: report
+    sort_order: 80
+    timeout_seconds: 300
+
+  - id: verify-all
+    name: Verify All
+    description: Full verification on all skills
+    group: operations
+    type: query
+    danger: safe
+    command: make verify-all
+    output:
+      format: ansi
+      display: checklist
+    sort_order: 90
+    timeout_seconds: 600
+
+  # Monitoring
+  - id: stats
+    name: Workbench Stats
+    description: Show skill counts, sizes, and health overview
+    group: monitoring
+    type: query
+    danger: safe
+    command: make stats
+    output:
+      format: ansi
+      display: table
+    sort_order: 10
+    timeout_seconds: 30
+
+  - id: explore
+    name: Explore Skill
+    description: Show detailed structure and metadata for a skill
+    group: monitoring
+    type: query
+    danger: safe
+    command: make explore SKILL=${skill}
+    args:
+      - id: skill
+        name: Skill
+        description: Skill to explore
+        type: enum
+        required: true
+        options_from:
+          command: ls skills/ 2>/dev/null
+          timeout_seconds: 5
+    output:
+      format: ansi
+      display: terminal
+    sort_order: 20
+    timeout_seconds: 30
+
+  - id: report
+    name: Full Report
+    description: Generate comprehensive workbench report
+    group: monitoring
+    type: query
+    danger: safe
+    command: make report
+    output:
+      format: ansi
+      display: report
+    sort_order: 30
+    timeout_seconds: 120
+
+  # Maintenance
+  - id: clean
+    name: Clean
+    description: Remove build artifacts and temporary files
+    group: maintenance
+    type: action
+    danger: caution
+    command: make clean
+    output:
+      format: ansi
+      display: terminal
+    sort_order: 10
+    timeout_seconds: 30
+
+  - id: setup
+    name: Setup Workbench
+    description: Install dependencies and verify workbench environment
+    group: maintenance
+    type: action
+    danger: safe
+    command: make setup
+    output:
+      format: ansi
+      display: terminal
+    available_when: [not_setup]
+    sort_order: 20
+    timeout_seconds: 120
+
+health:
+  - id: skill-count
+    name: Skills
+    command: ls skills/ 2>/dev/null | wc -l
+    interval_seconds: 30
+    timeout_seconds: 5
+    parse:
+      type: regex
+      expression: "(\\d+)"
+      format: "{value} skills"
+    thresholds:
+      green: ">= 1"
+      yellow: "== 0"
+      red: "< 0"
