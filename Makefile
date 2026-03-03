@@ -7,7 +7,7 @@ TESTS_DIR := tests
 
 help: ## Show available commands
 	@echo ""
-	@echo "  clawhub-lab workbench"
+	@echo "  clawhub-forge workbench"
 	@echo "  ====================="
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \

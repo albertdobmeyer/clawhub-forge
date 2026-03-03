@@ -1,4 +1,4 @@
-# clawhub-lab
+# clawhub-forge
 
 The Skill Development Workbench for [ClawHub](https://clawdhub.com). An offline-first pipeline to build, validate, and publish agent skills: `make new` → `make lint` → `make scan` → `make test` → `make publish`.
 
@@ -254,7 +254,7 @@ Ecosystem exploration produced several research artifacts:
 ## Project Structure
 
 ```
-clawhub-lab/
+clawhub-forge/
   skills/                           # Published skill bundles
     docker-sandbox/SKILL.md
     csv-pipeline/SKILL.md

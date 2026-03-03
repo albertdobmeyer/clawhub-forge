@@ -2,7 +2,7 @@
 
 ## What This Is
 
-ClawHub Forge (repo name: `clawhub-lab`) is a **skill development workbench and security pipeline** for the ClawHub ecosystem. It lets developers create, lint, scan, verify, test, and publish agent skills — with a heavy emphasis on offline security scanning against 87 malicious patterns across 13 MITRE ATT&CK categories.
+ClawHub Forge is a **skill development workbench and security pipeline** for the ClawHub ecosystem. It lets developers create, lint, scan, verify, test, and publish agent skills — with a heavy emphasis on offline security scanning against 87 malicious patterns across 13 MITRE ATT&CK categories.
 
 **Role in ecosystem**: `toolchain` — the active defense layer that ensures skill quality and safety before anything reaches the agent runtime.
 
@@ -122,7 +122,7 @@ This repo may exist in two places on your machine:
 - **Standalone**: `B:\REPOS\local-llm\clawhub-forge\`
 - **Submodule**: `B:\REPOS\local-llm\lobster-trapp\components\clawhub-forge\`
 
-**GitHub note**: The repo is named `clawhub-lab` on GitHub but mapped as `clawhub-forge` in the monorepo.
+**GitHub**: https://github.com/gitgoodordietrying/clawhub-forge
 
 After pushing changes from either location, sync the other:
 ```bash

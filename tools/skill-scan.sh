@@ -281,7 +281,7 @@ json_escape() {
 
 render_json() {
   echo '{'
-  echo '  "scanner": "clawhub-lab-skill-scan",'
+  echo '  "scanner": "clawhub-forge-skill-scan",'
   echo '  "version": "2.0.0",'
   echo "  \"patternCount\": ${#SCAN_PATTERNS[@]},"
   echo "  \"skillsScanned\": ${#skills[@]},"

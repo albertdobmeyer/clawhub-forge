@@ -27,7 +27,7 @@ fi
 
 # Post-install scanning when ALLOW_INSTALL=1
 if [[ "${1:-}" == "install" && "${ALLOW_INSTALL:-0}" == "1" ]]; then
-  LAB_ROOT="${CLAWHUB_LAB_ROOT:-/workspaces/clawhub-lab}"
+  LAB_ROOT="${CLAWHUB_FORGE_ROOT:-/workspaces/clawhub-forge}"
   SCANNER="$LAB_ROOT/tools/skill-scan.sh"
   VERIFIER="$LAB_ROOT/tools/skill-verify.sh"
   SKILLS_DIR="$LAB_ROOT/skills"
@@ -115,7 +115,7 @@ chmod +x /usr/local/bin/molthub-safe
 
 # Set up alias and environment in shell profile
 echo 'alias molthub="molthub-safe"' >> ~/.bashrc
-echo 'export CLAWHUB_LAB_ROOT=/workspaces/clawhub-lab' >> ~/.bashrc
+echo 'export CLAWHUB_FORGE_ROOT=/workspaces/clawhub-forge' >> ~/.bashrc
 
 echo ""
 echo "  Workbench ready."
