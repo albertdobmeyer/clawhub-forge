@@ -292,6 +292,11 @@ commands:
     sort_order: 20
     timeout_seconds: 120
 
+prerequisites:
+  container_runtime: false
+  setup_command: setup
+  check_command: test -f Makefile && make workbench-verify --quiet 2>/dev/null
+
 health:
   - id: skill-count
     name: Skills
