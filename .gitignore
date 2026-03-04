@@ -14,6 +14,29 @@ skills/*/.clawdhub/
 # Workbench cache (stats snapshots)
 .workbench-cache/
 
+# OS metadata
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs and runtime artifacts
+*.log
+*.pid
+
+# Python artifacts
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.coverage
+
 # Keep skills and docs tracked
 !skills/
 !docs/

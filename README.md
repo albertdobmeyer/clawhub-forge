@@ -1,5 +1,7 @@
 # clawhub-forge
 
+[![Skill CI](https://github.com/gitgoodordietrying/clawhub-forge/actions/workflows/skill-ci.yml/badge.svg)](https://github.com/gitgoodordietrying/clawhub-forge/actions/workflows/skill-ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 The Skill Development Workbench for [ClawHub](https://clawdhub.com). An offline-first pipeline to build, validate, and publish agent skills: `make new` → `make lint` → `make scan` → `make test` → `make publish`.
 
 **Author**: [@gitgoodordietrying](https://github.com/gitgoodordietrying)
