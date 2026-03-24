@@ -1,0 +1,20 @@
+# Force LF line endings for all text files checked into the repo.
+# This prevents CRLF issues when shell scripts run on Linux (CI).
+* text=auto eol=lf
+
+# Explicitly mark shell scripts as LF
+*.sh text eol=lf
+
+# Makefiles must be LF
+Makefile text eol=lf
+
+# YAML/YML
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Python
+*.py text eol=lf
+
+# Keep Windows batch files as CRLF
+*.bat text eol=crlf
+*.cmd text eol=crlf
