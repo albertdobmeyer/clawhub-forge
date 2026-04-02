@@ -1,33 +1,24 @@
 # ClawHub-Forge — TODO
 
-Tracked gaps from the 2026-03-03 audit. See `docs/vision-and-status.md` in lobster-trapp for the high-level roadmap.
+Current actionable items from Phase 1 (Housekeeping). See `docs/roadmap.md` for the full 5-phase plan and `docs/forge-identity-and-design.md` for the authoritative design.
 
 ---
 
-## DevContainer Setup Script Missing
+## Phase 1: Housekeeping
 
-- [ ] `.devcontainer/setup.sh` — Referenced in `devcontainer.json` `postCreateCommand` but the file doesn't exist. Opening this repo in a devcontainer will fail at the post-create step. Create the script or update devcontainer.json to remove the reference.
+- [ ] Remove duplicate `docs/security-report.md` — keep `docs/research/security-report.md`
+- [ ] Create `.devcontainer/setup.sh` — referenced in `devcontainer.json` but missing
+- [ ] Fix `coding-agent` skill — add tests and include in pipeline, or mark as draft
+- [ ] Generate `.trust` files for all 25 skills — run `make verify-all`, generate SHA-256 hashes
+- [ ] Add `make trust-all` Makefile target — regenerate trust files in one command
 
----
+## Upcoming (Phase 2+)
 
-## CI: Auto-Publish Job
-
-- [ ] `.github/workflows/skill-ci.yml` has a commented-out auto-publish step with `# TODO: detect changed skills and auto-publish`. Implement or remove.
-
----
-
-## No .trust Files Exist
-
-- [ ] No skill has been through the full publish gate (`lint → scan → verify → test → publish`). The `.trust` hash-pinning system is implemented in `skill-verify.sh` and `trust-manifest.sh` but has zero real-world artifacts. Consider publishing at least one skill end-to-end to validate the pipeline.
-
----
-
-## Registry API Dependency
-
-- [ ] `tools/skill-stats.sh` and `tools/registry-explore.sh` call `clawdhub.com/api/v1` — this endpoint may not be live. No offline or mock mode exists for local development/testing. Consider adding `--dry-run` or mock fixtures.
+- [ ] Build security certificate system (`skill-certify.sh`, `skill-export.sh`)
+- [ ] Build Content Disarm & Reconstruction pipeline (CDR — the core innovation)
+- [ ] Build AI-assisted skill creation wizard
+- [ ] Verify ClawHub API liveness, configure CI auto-publish
 
 ---
 
-## Coding-Agent Skill
-
-- [ ] `skills/coding-agent/` is excluded from publish (hardcoded `continue` in publish script) and has no test file. Either complete it or mark it explicitly as draft/experimental.
+*Last updated: 2026-04-02*

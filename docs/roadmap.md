@@ -1,81 +1,92 @@
 # ClawHub-Forge Roadmap
 
-**Updated:** 2026-03-27
-**Current state:** 25 published skills, 87-pattern scanner, zero-trust verifier, gated publishing pipeline, 168 behavioral test assertions. Most mature of the three modules.
+**Updated:** 2026-04-02
+**Current state:** 25 published skills, 87-pattern scanner, zero-trust verifier, gated publishing pipeline, 168 behavioral test assertions. Identity and feature set defined in `docs/forge-identity-and-design.md`.
 **Cross-reference:** See `docs/trifecta.md` in the lobster-trapp root for how this module fits with openclaw-vault and moltbook-pioneer.
 
 ---
 
 ## Phase 1: Housekeeping
 
-**Why:** Small issues that erode trust in an otherwise solid codebase.
+**Why:** Small issues that erode trust in an otherwise solid codebase. Also generates trust files which exercises the entire pipeline end-to-end (serves as a code audit).
 
 | Task | Details |
 |---|---|
-| Remove duplicate `docs/security-report.md` | Keep `docs/research/security-report.md` (more discoverable path). Delete `docs/security-report.md`. |
-| Create `.devcontainer/setup.sh` | Referenced in `devcontainer.json` but doesn't exist. Causes VS Code devcontainer setup to fail. |
-| Complete Gear → Shell terminology | Update any references to "Gear 1/2/3" to use "Hard/Split/Soft Shell" per `GLOSSARY.md`. |
-| Fix `coding-agent` skill exclusion | Either add tests and include in publish pipeline, or remove from `skills/` if it's not production-ready. |
+| Remove duplicate `docs/security-report.md` | Keep `docs/research/security-report.md`. Delete `docs/security-report.md`. |
+| Create `.devcontainer/setup.sh` | Referenced in `devcontainer.json` but doesn't exist. |
+| Fix `coding-agent` skill exclusion | Either add tests and include in pipeline, or explicitly mark as draft. |
+| Generate .trust files for all 25 skills | Run verify pipeline, generate SHA-256 trust manifests. |
+| Add `make trust-all` target | Regenerate trust files in one command. |
 
-**Exit criteria:** No duplicate files. DevContainer works on fresh clone. Terminology consistent.
+**Exit criteria:** Clean repo, devcontainer works, all skills have trust files.
 
 ---
 
-## Phase 2: Trust File Generation
+## Phase 2: Security Certificate System
 
-**Why:** The zero-trust verifier supports `.trust` files (SHA-256 hashes) for fast-path verification of our own skills. No `.trust` files exist yet — every verification run re-scans everything from scratch.
+**Why:** The vault needs a machine-readable clearance report to accept forge-vetted skills. This is the bridge between forge and vault.
 
 | Task | Details |
 |---|---|
-| Run full verify on all 25 skills | Generate `.trust` files for each passing skill |
-| Document `.trust` file lifecycle | When to regenerate, what invalidates a trust file |
-| Add `make trust-all` target | Regenerate trust files for all skills in one command |
+| Define clearance report JSON schema | Formalize the certificate format. |
+| Build `skill-certify.sh` | Generate certificate from scan+verify+test results. |
+| Build `skill-export.sh` | Package skill directory + certificate for vault transfer. |
+| Add `make certify` and `make export` targets | Wire into Makefile. |
+| Update `skill-publish.sh` | Attach certificate to published skills. |
+| Update component.yml | Add certify and export commands for GUI. |
 
-**Exit criteria:** All 25 skills have `.trust` files. Subsequent `make verify` runs are fast for unchanged skills.
+**Exit criteria:** `make export SKILL=name` produces a skill bundle with security certificate. Vault's `install-skill.sh` can validate it.
 
 ---
 
-## Phase 3: Vault Integration — Skill Installation Path
+## Phase 3: Content Disarm & Reconstruction (CDR)
 
-**Why:** This is the most important cross-module gap. Forge vets skills, vault runs them — but there's no documented or automated workflow for getting a forge-vetted skill into the vault.
+**Why:** This is the novel feature that defines the forge's USP. ClawHub has an 11.9% malware rate — traditional scanning catches known patterns but misses novel attacks. CDR rebuilds downloaded skills from semantic intent, destroying any embedded attacks.
 
 | Task | Details |
 |---|---|
-| Document manual skill transfer | How to copy a forge-vetted skill into the vault container's workspace |
-| Design clearance report format | A machine-readable output from `make scan` + `make verify` that vault can consume |
-| Build `make export SKILL=name` | Packages a vetted skill with its scan report for transfer to vault |
-| Coordinate with vault Phase 5a | Define the vault-side acceptance mechanism |
+| Design CDR spec | Full spec with architecture, data flow, security boundaries. |
+| Build quarantine zone | Directory management, download-to-quarantine, immediate cleanup. |
+| Build CDR sanitizer | Extract safe lines from untrusted content using line-classifier.sh. |
+| Build CDR intent extractor | Send safe lines to isolated LLM (Ollama default), get structured intent. |
+| Build CDR generator | Reconstruct clean SKILL.md from intent + template. |
+| Build CDR orchestrator | End-to-end: quarantine -> sanitize -> extract -> generate -> verify. |
+| Build CDR config | LLM backend selection (Ollama/API), model, prompts. |
+| Build skill download | Download from ClawHub to quarantine (never to workspace). |
+| Add Makefile targets | `make download`, `make cdr`, `make install-safe`. |
+| Write CDR tests | Test with known-bad fixtures, verify injection destruction. |
 
-**Exit criteria:** A user can forge a skill, export it with clearance, and load it into the vault. The workflow is documented end-to-end.
+**Key rule:** The original downloaded file is NEVER accessible. Binary: clean rebuild or discard entirely.
+
+**Exit criteria:** `make download SKILL=name` downloads, CDRs, verifies, and delivers a clean skill. Tests prove injection attacks are destroyed in reconstruction.
 
 ---
 
-## Phase 4: Scanner Improvements
+## Phase 4: AI-Assisted Skill Creation
 
-**Why:** The scanner works but has room for operational improvement.
+**Why:** Non-technical users need help writing properly formatted SKILL.md files. Reuses the CDR's LLM infrastructure.
 
 | Task | Details |
 |---|---|
-| Verify scanner against real ClawHub skills | Download a sample of live ClawHub skills and run the scanner. Confirm detection rates. |
-| Add `--update-patterns` mechanism | Way to add new patterns from threat intel without editing source |
-| Pattern sharing with pioneer | Investigate shared pattern format between forge's 87 patterns and pioneer's 30 patterns |
-| Registry API liveness check | Confirm `clawdhub.com/api/v1` is accessible. Add `--dry-run` mode with fixture data if not. |
+| Design creation wizard spec | What questions to ask, how to map answers to template. |
+| Build guided creation flow | Natural language -> template selection -> AI draft -> pipeline verification. |
+| Integration with Ollama/API | Use same LLM backend as CDR for skill drafting. |
 
-**Exit criteria:** Scanner tested against real-world skills. Pattern update mechanism documented.
+**Exit criteria:** A non-technical user can describe a skill in plain language and get a verified SKILL.md.
 
 ---
 
-## Phase 5: CI/CD Pipeline
+## Phase 5: CI/CD and Registry Integration
 
-**Why:** The auto-publish CI job is commented out. For a production release, the pipeline should be automated.
+**Why:** The auto-publish CI job is commented out. For a production release, the pipeline should be automated with certificates.
 
 | Task | Details |
 |---|---|
-| Uncomment and configure CI publish job | Lint → scan → test → publish in CI |
-| Add GitHub Actions workflow | Run `make test-all` and `make scan-all` on PR |
-| Protect main branch | Require passing CI before merge |
+| Verify ClawHub API liveness | Confirm `clawdhub.com/api/v1` is accessible, add mock mode if not. |
+| Uncomment auto-publish CI | Configure version detection, enable gated publish in CI. |
+| Certificate-aware publishing | Published skills include security certificate. |
 
-**Exit criteria:** PRs are automatically tested. Publishing is gated by CI.
+**Exit criteria:** PRs auto-tested, publishing includes certificates.
 
 ---
 
@@ -83,16 +94,22 @@
 
 ```
 Phase 1 (Housekeeping)
-    ↓
-Phase 2 (Trust files)
-    ↓
-Phase 3 (Vault integration) ← depends on vault Phase 5a
-    ↓
-Phase 4 (Scanner improvements)
-    ↓
-Phase 5 (CI/CD)
+    |
+    v
+Phase 2 (Certificates) <-- vault needs this format for install-skill.sh
+    |
+    v
+Phase 3 (CDR) <-- the core innovation, depends on certificates for output
+    |
+    v
+Phase 4 (AI Creation) <-- reuses CDR's LLM infrastructure
+    |
+    v
+Phase 5 (CI/CD) <-- final polish
 ```
 
 ---
 
-*This roadmap covers the clawhub-forge module only. See `openclaw-vault/docs/roadmap.md` and `moltbook-pioneer/docs/roadmap.md` for the other modules.*
+*This roadmap covers the clawhub-forge module only. See `openclaw-vault/docs/roadmap.md` and `moltbook-pioneer/docs/roadmap.md` for the other modules. See `docs/forge-identity-and-design.md` for the full identity, architecture, and design rationale.*
+
+*Last updated: 2026-04-02*

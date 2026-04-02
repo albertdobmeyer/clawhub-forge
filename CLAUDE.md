@@ -1,10 +1,27 @@
-# ClawHub Forge — Skill Development Workbench
+# ClawHub Forge — Security Gatekeeper for the OpenClaw Skill Ecosystem
 
 ## What This Is
 
-ClawHub Forge is a **skill development workbench and security pipeline** for the ClawHub ecosystem. It lets developers create, lint, scan, verify, test, and publish agent skills — with a heavy emphasis on offline security scanning against 87 malicious patterns across 13 MITRE ATT&CK categories.
+ClawHub Forge is the **security gatekeeper** that ensures every skill entering or leaving a user's system is verified clean. It serves three roles:
 
-**Role in ecosystem**: `toolchain` — the active defense layer that ensures skill quality and safety before anything reaches the agent runtime.
+| Role | What It Does |
+|------|-------------|
+| **Shield** | Downloads skills safely via Content Disarm & Reconstruction (CDR) — quarantine, scan, rebuild from intent, verify |
+| **Anvil** | Helps users create new skills with AI assistance and automatic pipeline verification |
+| **Stamp** | Publishes skills with security certificates proving they passed the full pipeline |
+
+**Role in ecosystem**: `toolchain` — the supply chain defense layer that vets skills before they reach the agent runtime (openclaw-vault).
+
+**Authoritative design document:** `docs/forge-identity-and-design.md` — the complete identity, feature spec, and handoff document.
+
+## Target User
+
+**Non-technical users** who run the Lobster-TrApp desktop app. They interact with forge through:
+- The **Lobster-TrApp GUI** (primary) — buttons, wizards, status badges
+- Their **OpenClaw agent** (secondary) — the agent assists with skill creation
+- **Claude Code on the host** (power users) — direct CLI access to Makefile targets
+
+The forge makes all security decisions FOR the user and presents clear pass/fail results.
 
 ## This Repo Is a Lobster-TrApp Component
 
@@ -102,12 +119,19 @@ Several commands use `options_from` to dynamically populate dropdowns:
 
 ## Security Pipeline
 
-The gated publishing flow:
+### Gated Publishing Flow (exists)
 ```
 make new → make lint → make scan → make verify-skill → make test → make publish
                                                                         │
                                                             ALL must pass
 ```
+
+### Content Disarm & Reconstruction (planned — see design doc)
+```
+Download → Quarantine → Pre-filter (87 patterns) → Isolated LLM extracts intent
+    → Generator rebuilds clean SKILL.md → Post-verify → Deliver or Discard
+```
+The original downloaded file is NEVER accessible. Binary: clean rebuild or discard entirely.
 
 ### Scanning Capabilities
 - 87 malicious patterns across 13 MITRE ATT&CK categories
@@ -118,9 +142,7 @@ make new → make lint → make scan → make verify-skill → make test → mak
 
 ## Dual-Copy Sync
 
-This repo may exist in two places on your machine:
-- **Standalone**: `B:\REPOS\local-llm\clawhub-forge\`
-- **Submodule**: `B:\REPOS\local-llm\lobster-trapp\components\clawhub-forge\`
+This repo may exist as both a standalone clone and a submodule under lobster-trapp.
 
 **GitHub**: https://github.com/gitgoodordietrying/clawhub-forge
 
@@ -131,6 +153,14 @@ git pull
 # If submodule copy, also update parent:
 cd ../.. && git add components/clawhub-forge && git commit -m "Update clawhub-forge ref"
 ```
+
+## Development Principles
+
+1. **Security first** — this is a public security promise. Every line must uphold it.
+2. **Spec before code** — every new feature requires a written spec before implementation.
+3. **One task at a time** — always validate before moving to the next.
+4. **CLI-first** — bash tools + Makefile targets. GUI wraps via component.yml.
+5. **The original downloaded file is NEVER used** — binary: CDR rebuild or discard.
 
 ## What NOT to Do
 
