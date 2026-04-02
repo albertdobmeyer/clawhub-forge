@@ -41,7 +41,6 @@ done < <(discover_skills "$REPO_ROOT/skills")
 fetch_our_stats() {
   local results="[]"
   for slug in "${skills[@]}"; do
-    [[ "$slug" == "coding-agent" ]] && continue
     response=$(curl -sf "${API_BASE}/skills/${slug}" 2>/dev/null || echo '{}')
     downloads=$(echo "$response" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('downloads','-'))" 2>/dev/null || echo "-")
     stars=$(echo "$response" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('stars','-'))" 2>/dev/null || echo "-")

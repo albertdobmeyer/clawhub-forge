@@ -1,4 +1,4 @@
-.PHONY: help new lint lint-one scan scan-one scan-json scan-sarif scan-summary scan-strict test test-one test-tools publish stats stats-trend stats-rank check check-all self-test verify verify-skill verify-all verify-report explore report clean
+.PHONY: help new lint lint-one scan scan-one scan-json scan-sarif scan-summary scan-strict test test-one test-tools publish stats stats-trend stats-rank check check-all self-test verify verify-skill verify-all verify-report trust-all explore report clean
 
 SHELL := /bin/bash
 SKILLS_DIR := skills
@@ -52,6 +52,9 @@ verify-all: ## Zero-trust verify all skills
 
 verify-report: ## Verify with per-line report (SKILL=name)
 	@bash $(TOOLS_DIR)/skill-verify.sh --report $(SKILLS_DIR)/$(SKILL)
+
+trust-all: ## Generate .trust files for all verified skills
+	@bash $(TOOLS_DIR)/skill-verify.sh --trust $(SKILLS_DIR)
 
 test: ## Run skill behavioral tests
 	@bash $(TOOLS_DIR)/skill-test.sh

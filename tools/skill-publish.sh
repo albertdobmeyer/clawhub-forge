@@ -5,7 +5,6 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib/common.sh"
-source "$SCRIPT_DIR/lib/trust-manifest.sh"
 
 SKILL_NAME="${1:-}"
 VERSION="${2:-}"
@@ -52,7 +51,7 @@ fi
 # Gate 3: Zero-trust verification
 echo ""
 echo -e "${BOLD}Step 3/5: Zero-Trust Verification${RESET}"
-if ! bash "$SCRIPT_DIR/skill-verify.sh" --strict "$SKILL_DIR"; then
+if ! bash "$SCRIPT_DIR/skill-verify.sh" --strict --trust "$SKILL_DIR"; then
   echo ""
   echo -e "${RED}BLOCKED: Zero-trust verification failed. Every line must be classifiable as safe.${RESET}"
   exit 1
@@ -73,9 +72,6 @@ if ! bash "$SCRIPT_DIR/skill-test.sh" "$SKILL_NAME"; then
   exit 1
 fi
 
-# Generate trust manifest after verification passes
-generate_trust_manifest "$SKILL_DIR"
-log_pass "Trust manifest generated: $SKILL_DIR/.trust"
 
 # Gate 5: Publish
 echo ""

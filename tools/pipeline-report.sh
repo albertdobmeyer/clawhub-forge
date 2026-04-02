@@ -82,7 +82,6 @@ echo -e "${BOLD}Registry Position:${RESET}"
 our_count=0
 while IFS= read -r dir; do
   slug=$(get_skill_slug "$dir")
-  [[ "$slug" == "coding-agent" ]] && continue
   our_count=$((our_count + 1))
 done < <(discover_skills "$SKILLS_DIR")
 

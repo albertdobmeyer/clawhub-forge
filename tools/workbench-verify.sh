@@ -42,7 +42,6 @@ fi
 missing_tests=()
 for dir in "$SKILLS_DIR"/*/; do
   slug=$(basename "$dir")
-  [[ "$slug" == "coding-agent" ]] && continue
   [[ ! -f "$TESTS_DIR/${slug}.test.sh" ]] && missing_tests+=("$slug")
 done
 if [[ ${#missing_tests[@]} -eq 0 ]]; then

@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 # Zero-trust skill verifier — guilty until every line proven safe
-# Usage: skill-verify.sh [--strict] [--report] [--json] <skill_dir|skills_parent>
+# Usage: skill-verify.sh [--strict] [--report] [--json] [--trust] <skill_dir|skills_parent>
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lib/common.sh"
 source "$SCRIPT_DIR/lib/line-classifier.sh"
+source "$SCRIPT_DIR/lib/trust-manifest.sh"
 
 # Portable python
 PY=$(command -v python3 2>/dev/null || command -v python 2>/dev/null) || PY=""
@@ -14,12 +15,14 @@ PY=$(command -v python3 2>/dev/null || command -v python 2>/dev/null) || PY=""
 STRICT=false
 REPORT=false
 JSON_OUT=false
+GENERATE_TRUST=false
 TARGET=""
 for arg in "$@"; do
   case "$arg" in
     --strict)  STRICT=true ;;
     --report)  REPORT=true ;;
     --json)    JSON_OUT=true ;;
+    --trust)   GENERATE_TRUST=true ;;
     *)         TARGET="$arg" ;;
   esac
 done
@@ -144,6 +147,11 @@ verify_skill() {
     else
       verdict_reason="${suspicious_lines} suspicious"
     fi
+  fi
+
+  # ── Generate trust manifest if --trust and skill passed ──
+  if [[ "$GENERATE_TRUST" == true && "$final_verdict" == "VERIFIED" ]]; then
+    generate_trust_manifest "$skill_dir" "$total_lines" "$safe_lines" "$suspicious_lines"
   fi
 
   # ── JSON output ──

@@ -34,7 +34,6 @@ done
 declare -A OUR_SKILLS
 while IFS= read -r dir; do
   slug=$(get_skill_slug "$dir")
-  [[ "$slug" == "coding-agent" ]] && continue
   OUR_SKILLS["$slug"]=1
 done < <(discover_skills "$REPO_ROOT/skills")
 

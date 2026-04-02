@@ -6,11 +6,11 @@ Current actionable items from Phase 1 (Housekeeping). See `docs/roadmap.md` for 
 
 ## Phase 1: Housekeeping
 
-- [ ] Remove duplicate `docs/security-report.md` — keep `docs/research/security-report.md`
-- [ ] Create `.devcontainer/setup.sh` — referenced in `devcontainer.json` but missing
-- [ ] Fix `coding-agent` skill — add tests and include in pipeline, or mark as draft
-- [ ] Generate `.trust` files for all 25 skills — run `make verify-all`, generate SHA-256 hashes
-- [ ] Add `make trust-all` Makefile target — regenerate trust files in one command
+- [x] Remove duplicate `docs/security-report.md` — keep `docs/research/security-report.md`
+- [x] Create `.devcontainer/setup.sh` — referenced in `devcontainer.json` but missing (already existed)
+- [x] Fix `coding-agent` skill — included in pipeline (passes scan + verify + test)
+- [x] Generate `.trust` files for all 25 skills — 25/25 verified, SHA-256 hashes with line counts
+- [x] Add `make trust-all` Makefile target — runs `skill-verify.sh --trust` on all skills
 
 ## Upcoming (Phase 2+)
 

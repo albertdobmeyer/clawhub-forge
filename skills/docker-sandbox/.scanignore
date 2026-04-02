@@ -1,2 +1,4 @@
-# Docker sandbox skill — curl inside sandbox is demonstrating isolated network
-L234
+# L147: Docker socket documentation — describes DinD capability of sandbox environment
+L147
+# L243: `curl -sL https://api.example.com/data` — educational example of fetching data inside sandbox
+L243
