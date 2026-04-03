@@ -14,7 +14,8 @@ Current actionable items from Phase 1 (Housekeeping). See `docs/roadmap.md` for 
 
 ## Upcoming (Phase 2+)
 
-- [ ] Build security certificate system (`skill-certify.sh`, `skill-export.sh`)
+- [x] Build security certificate system (`skill-certify.sh`, `skill-export.sh`)
+- [ ] (Deferred) GPG signature support for certificates
 - [ ] Build Content Disarm & Reconstruction pipeline (CDR — the core innovation)
 - [ ] Build AI-assisted skill creation wizard
 - [ ] Verify ClawHub API liveness, configure CI auto-publish
