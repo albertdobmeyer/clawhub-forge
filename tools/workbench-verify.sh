@@ -118,6 +118,8 @@ orphan_tests=()
 for test_file in "$TESTS_DIR"/*.test.sh; do
   [[ ! -f "$test_file" ]] && continue
   slug=$(basename "$test_file" .test.sh)
+  # Skip infrastructure tests (not tied to a specific skill)
+  [[ "$slug" == cdr-* ]] && continue
   [[ ! -d "$SKILLS_DIR/$slug" ]] && orphan_tests+=("$slug")
 done
 if [[ ${#orphan_tests[@]} -eq 0 ]]; then
