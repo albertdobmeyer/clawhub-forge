@@ -88,5 +88,16 @@ count_code_blocks() {
   grep -c '^```' "$1" | tr -d ' '
 }
 
+# JSON string escaping (shared by scanner, verifier, certifier)
+json_escape() {
+  local s="$1"
+  s="${s//\\/\\\\}"
+  s="${s//\"/\\\"}"
+  s="${s//$'\n'/\\n}"
+  s="${s//$'\r'/}"
+  s="${s//$'\t'/\\t}"
+  printf '%s' "$s"
+}
+
 # Resolve repo root
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
