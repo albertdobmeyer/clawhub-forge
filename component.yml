@@ -132,6 +132,50 @@ commands:
     sort_order: 40
     timeout_seconds: 180
 
+  - id: certify
+    name: Certify Skill
+    description: Run full 4-gate pipeline and generate security certificate
+    group: operations
+    type: action
+    danger: safe
+    command: make certify SKILL=${skill}
+    args:
+      - id: skill
+        name: Skill
+        description: Skill to certify
+        type: enum
+        required: true
+        options_from:
+          command: ls skills/ 2>/dev/null
+          timeout_seconds: 5
+    output:
+      format: ansi
+      display: terminal
+    sort_order: 35
+    timeout_seconds: 180
+
+  - id: export
+    name: Export for Vault
+    description: Certify and package skill for vault installation
+    group: operations
+    type: action
+    danger: safe
+    command: make export SKILL=${skill}
+    args:
+      - id: skill
+        name: Skill
+        description: Skill to export
+        type: enum
+        required: true
+        options_from:
+          command: ls skills/ 2>/dev/null
+          timeout_seconds: 5
+    output:
+      format: ansi
+      display: terminal
+    sort_order: 36
+    timeout_seconds: 180
+
   - id: test
     name: Test Skill
     description: Run test suite for a skill
