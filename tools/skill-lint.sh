@@ -36,6 +36,16 @@ for skill_dir in "${skills[@]}"; do
     count_warn
   fi
 
+  # Check version field
+  fm_version=$(get_frontmatter_field "$file" "version" || true)
+  if [[ -z "$fm_version" ]]; then
+    log_warn "$slug: Missing 'version' field in frontmatter"
+    count_warn
+  elif ! echo "$fm_version" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+    log_warn "$slug: Invalid version format '$fm_version' (expected X.Y.Z)"
+    count_warn
+  fi
+
   # === Structure checks ===
   # H1 title after frontmatter
   if ! grep -q '^# ' "$file"; then
