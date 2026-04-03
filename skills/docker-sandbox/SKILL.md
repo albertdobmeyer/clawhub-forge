@@ -1,5 +1,6 @@
 ---
 name: docker-sandbox
+version: 1.0.0
 description: Create and manage Docker sandboxed VM environments for safe agent execution. Use when running untrusted code, exploring packages, or isolating agent workloads. Supports Claude, Codex, Copilot, Gemini, and Kiro agents with network proxy controls.
 metadata: {"clawdbot":{"emoji":"🐳","requires":{"bins":["docker"]},"primaryEnv":"","homepage":"https://docs.docker.com/desktop/features/sandbox/","os":["linux","darwin","win32"]}}
 ---

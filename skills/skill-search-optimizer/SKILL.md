@@ -1,5 +1,6 @@
 ---
 name: skill-search-optimizer
+version: 1.0.0
 description: Optimize agent skills for discoverability on ClawdHub/MoltHub. Use when improving search ranking, writing descriptions for semantic search, understanding how the registry indexes skills, testing search visibility, or analyzing why a skill isn't being found.
 metadata: {"clawdbot":{"emoji":"🔎","requires":{"anyBins":["npx"]},"os":["linux","darwin","win32"]}}
 ---

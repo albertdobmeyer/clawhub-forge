@@ -1,5 +1,6 @@
 ---
 name: skill-writer
+version: 1.0.0
 description: Write high-quality agent skills (SKILL.md files) for ClawdHub/MoltHub. Use when creating a new skill from scratch, structuring skill content, writing effective frontmatter and descriptions, choosing section patterns, or following best practices for agent-consumable technical documentation.
 metadata: {"clawdbot":{"emoji":"✍️","requires":{"anyBins":["npx"]},"os":["linux","darwin","win32"]}}
 ---

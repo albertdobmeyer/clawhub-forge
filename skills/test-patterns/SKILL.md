@@ -1,5 +1,6 @@
 ---
 name: test-patterns
+version: 1.0.0
 description: Write and run tests across languages and frameworks. Use when setting up test suites, writing unit/integration/E2E tests, measuring coverage, mocking dependencies, or debugging test failures. Covers Node.js (Jest/Vitest), Python (pytest), Go, Rust, and Bash.
 metadata: {"clawdbot":{"emoji":"🧪","requires":{"anyBins":["node","python3","go","cargo","bash"]},"os":["linux","darwin","win32"]}}
 ---

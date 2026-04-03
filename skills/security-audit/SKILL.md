@@ -1,5 +1,6 @@
 ---
 name: security-audit
+version: 1.0.0
 description: Audit codebases and infrastructure for security issues. Use when scanning dependencies for vulnerabilities, detecting hardcoded secrets, checking OWASP top 10 issues, verifying SSL/TLS, auditing file permissions, or reviewing code for injection and auth flaws.
 metadata: {"clawdbot":{"emoji":"🔒","requires":{"anyBins":["npm","pip","git","openssl","curl"]},"os":["linux","darwin","win32"]}}
 ---

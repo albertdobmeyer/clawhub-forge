@@ -1,5 +1,6 @@
 ---
 name: git-workflows
+version: 1.0.0
 description: Advanced git operations beyond add/commit/push. Use when rebasing, bisecting bugs, using worktrees for parallel development, recovering with reflog, managing subtrees/submodules, resolving merge conflicts, cherry-picking across branches, or working with monorepos.
 metadata: {"clawdbot":{"emoji":"🌿","requires":{"bins":["git"]},"os":["linux","darwin","win32"]}}
 ---

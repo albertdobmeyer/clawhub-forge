@@ -1,5 +1,6 @@
 ---
 name: data-validation
+version: 1.0.0
 description: Validate data with schemas across languages and formats. Use when defining JSON Schema, using Zod (TypeScript) or Pydantic (Python), validating API request/response shapes, checking CSV/JSON data integrity, or setting up data contracts between services.
 metadata: {"clawdbot":{"emoji":"✅","requires":{"anyBins":["node","python3","jq"]},"os":["linux","darwin","win32"]}}
 ---

@@ -1,5 +1,6 @@
 ---
 name: encoding-formats
+version: 1.0.0
 description: Encode, decode, and convert between data formats. Use when working with Base64, URL encoding, hex, Unicode, JWT tokens, hashing, checksums, or converting between serialization formats like JSON, MessagePack, and protobuf wire format.
 metadata: {"clawdbot":{"emoji":"🔢","requires":{"anyBins":["base64","python3","openssl","xxd"]},"os":["linux","darwin","win32"]}}
 ---

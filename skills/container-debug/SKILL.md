@@ -1,5 +1,6 @@
 ---
 name: container-debug
+version: 1.0.0
 description: Debug running Docker containers and Compose services. Use when inspecting container logs, exec-ing into running containers, diagnosing networking issues, checking resource usage, debugging multi-stage builds, troubleshooting health checks, or fixing Compose service dependencies.
 metadata: {"clawdbot":{"emoji":"🐳","requires":{"bins":["docker"]},"os":["linux","darwin","win32"]}}
 ---

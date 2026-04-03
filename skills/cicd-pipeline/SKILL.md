@@ -1,5 +1,6 @@
 ---
 name: cicd-pipeline
+version: 1.0.0
 description: Create, debug, and manage CI/CD pipelines with GitHub Actions. Use when the user needs to set up automated testing, deployment, releases, or workflows. Covers workflow syntax, common patterns, secrets management, caching, matrix builds, and troubleshooting.
 metadata: {"clawdbot":{"emoji":"🚀","requires":{"anyBins":["gh","git"]},"os":["linux","darwin","win32"]}}
 ---

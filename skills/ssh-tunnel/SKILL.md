@@ -1,5 +1,6 @@
 ---
 name: ssh-tunnel
+version: 1.0.0
 description: SSH tunneling, port forwarding, and remote access patterns. Use when setting up local/remote/dynamic port forwards, configuring jump hosts, managing SSH keys, multiplexing connections, transferring files with scp/rsync, or debugging SSH connection issues.
 metadata: {"clawdbot":{"emoji":"🔑","requires":{"bins":["ssh"]},"os":["linux","darwin","win32"]}}
 ---
