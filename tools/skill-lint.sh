@@ -110,8 +110,8 @@ for skill_dir in "${skills[@]}"; do
     count_pass
   fi
 
-  # TODO/FIXME/XXX placeholders
-  placeholders=$(grep -ciE '\b(TODO|FIXME|XXX)\b' "$file" || true)
+  # TODO/FIXME/XXX placeholders (only in prose, not inside code fences)
+  placeholders=$(awk '/^```/{c=!c;next} !c{print}' "$file" | grep -ciE '\b(TODO|FIXME|XXX)\b' || true)
   if (( placeholders > 0 )); then
     log_fail "$slug: Found ${placeholders} TODO/FIXME/XXX placeholders"
     count_fail

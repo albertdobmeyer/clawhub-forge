@@ -9,6 +9,13 @@ metadata: {"clawdbot":{"emoji":"🧩","requires":{"anyBins":["claude","codex","o
 
 Use **bash background mode** for non-interactive coding work. For interactive coding sessions, use the **tmux** skill (always, except very simple one-shot prompts).
 
+## When to Use
+
+- Running Codex CLI, Claude Code, OpenCode, or Pi for automated coding tasks
+- Batch processing multiple PRs, issues, or code reviews in parallel
+- Non-interactive code generation or refactoring with background monitoring
+- Orchestrating multiple coding agents across git worktrees
+
 ## The Pattern: workdir + background
 
 ```bash

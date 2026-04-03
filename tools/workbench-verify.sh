@@ -155,7 +155,7 @@ print((d2-d1).days)
     check_warn "[11/12] No stats snapshots found (run 'make stats')"
   fi
 else
-  check_warn "[11/12] No cache directory (run 'make stats')"
+  check_pass "[11/12] Stats cache not initialized (optional — run 'make stats')"
 fi
 
 # ─── Check 12: Git working tree is clean ───

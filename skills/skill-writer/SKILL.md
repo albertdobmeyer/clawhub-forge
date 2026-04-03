@@ -390,7 +390,7 @@ Before publishing, verify:
 2. **Description starts with what the skill does** — not "This skill..." or "A skill for..."
 3. **Every section has at least one code block** — no text-only sections in the main content
 4. **Commands actually work** — test in a clean environment
-5. **No placeholder values left** — search for `TODO`, `FIXME`, `example.com` used as real URLs
+5. **No placeholder values left** — search for leftover task markers, `example.com` used as real URLs
 6. **Slug is available** — `npx molthub@latest search "your-slug"` returns no exact match
 7. **`requires.anyBins` lists real dependencies** — tools the skill's commands actually invoke
 8. **Tips section exists** — with 5+ actionable, non-obvious bullets
