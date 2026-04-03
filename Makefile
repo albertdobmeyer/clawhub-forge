@@ -1,4 +1,4 @@
-.PHONY: help new lint lint-one scan scan-one scan-json scan-sarif scan-summary scan-strict test test-one test-tools publish stats stats-trend stats-rank check check-all self-test verify verify-skill verify-all verify-report trust-all explore report clean
+.PHONY: help new lint lint-one scan scan-one scan-json scan-sarif scan-summary scan-strict test test-one test-tools publish stats stats-trend stats-rank check check-all self-test verify verify-skill verify-all verify-report trust-all certify certify-all export explore report clean
 
 SHELL := /bin/bash
 SKILLS_DIR := skills
@@ -55,6 +55,18 @@ verify-report: ## Verify with per-line report (SKILL=name)
 
 trust-all: ## Generate .trust files for all verified skills
 	@bash $(TOOLS_DIR)/skill-verify.sh --trust $(SKILLS_DIR)
+
+certify: ## Generate security certificate (SKILL=name)
+	@bash $(TOOLS_DIR)/skill-certify.sh "$(SKILL)"
+
+certify-all: ## Generate certificates for all skills
+	@for dir in $(SKILLS_DIR)/*/; do \
+		skill=$$(basename "$$dir"); \
+		bash $(TOOLS_DIR)/skill-certify.sh "$$skill" || exit 1; \
+	done
+
+export: ## Certify + package for vault transfer (SKILL=name)
+	@bash $(TOOLS_DIR)/skill-export.sh "$(SKILL)"
 
 test: ## Run skill behavioral tests
 	@bash $(TOOLS_DIR)/skill-test.sh
