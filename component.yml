@@ -176,6 +176,44 @@ commands:
     sort_order: 36
     timeout_seconds: 180
 
+  - id: cdr
+    name: CDR Skill File
+    description: Content Disarm & Reconstruction — rebuild an untrusted skill safely
+    group: operations
+    type: action
+    danger: caution
+    command: make cdr FILE=${file_path}
+    args:
+      - id: file_path
+        name: Skill File
+        description: Path to untrusted SKILL.md file
+        type: string
+        required: true
+    output:
+      format: ansi
+      display: terminal
+    sort_order: 40
+    timeout_seconds: 300
+
+  - id: download-safe
+    name: Download + CDR
+    description: Download skill from ClawHub and rebuild safely via CDR
+    group: operations
+    type: action
+    danger: caution
+    command: make cdr-download SKILL=${skill_name}
+    args:
+      - id: skill_name
+        name: Skill Name
+        description: ClawHub skill name to download
+        type: string
+        required: true
+    output:
+      format: ansi
+      display: terminal
+    sort_order: 41
+    timeout_seconds: 300
+
   - id: test
     name: Test Skill
     description: Run test suite for a skill

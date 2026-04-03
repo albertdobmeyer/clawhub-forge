@@ -1,4 +1,4 @@
-.PHONY: help new lint lint-one scan scan-one scan-json scan-sarif scan-summary scan-strict test test-one test-tools publish stats stats-trend stats-rank check check-all self-test verify verify-skill verify-all verify-report trust-all certify certify-all export explore report clean
+.PHONY: help new lint lint-one scan scan-one scan-json scan-sarif scan-summary scan-strict test test-one test-tools publish stats stats-trend stats-rank check check-all self-test verify verify-skill verify-all verify-report trust-all certify certify-all export download cdr cdr-download explore report clean
 
 SHELL := /bin/bash
 SKILLS_DIR := skills
@@ -67,6 +67,15 @@ certify-all: ## Generate certificates for all skills
 
 export: ## Certify + package for vault transfer (SKILL=name)
 	@bash $(TOOLS_DIR)/skill-export.sh "$(SKILL)"
+
+download: ## Download skill from ClawHub to quarantine (SKILL=name)
+	@bash $(TOOLS_DIR)/skill-download.sh "$(SKILL)"
+
+cdr: ## CDR a local skill file (FILE=path/to/SKILL.md)
+	@bash $(TOOLS_DIR)/skill-cdr.sh "$(FILE)"
+
+cdr-download: ## Download from ClawHub + CDR (SKILL=name)
+	@bash $(TOOLS_DIR)/skill-cdr.sh --download "$(SKILL)"
 
 test: ## Run skill behavioral tests
 	@bash $(TOOLS_DIR)/skill-test.sh
