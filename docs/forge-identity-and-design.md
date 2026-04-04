@@ -230,7 +230,13 @@ User clicks "Publish" on a skill in GUI
 | 25 published skills | `skills/*/SKILL.md` | All passing lint+scan+test |
 | 3 skill templates | `templates/cli-tool/`, `workflow/`, `language-ref/` | Functional |
 | Scaffolder | `tools/skill-new.sh` | Creates skill + test from template |
-| Trust manifest system | `tools/lib/trust-manifest.sh` | SHA-256 hash pinning (no .trust files generated yet) |
+| Trust manifest system | `tools/lib/trust-manifest.sh`, 25 `.trust` files | SHA-256 hash pinning, all skills have trust files |
+| CDR (Content Disarm & Reconstruction) | `tools/skill-cdr.sh`, `tools/lib/cdr-prefilter.sh`, `tools/lib/cdr-intent.sh`, `config/cdr.conf` | Quarantine, pre-filter, Ollama intent extraction, reconstruction, post-verify |
+| Isolated LLM layer (Ollama) | `config/cdr.conf`, `tools/lib/cdr-intent.sh`, `tools/lib/create-draft.sh` | Used by CDR + skill creation, configurable backend |
+| Security certificates | `tools/skill-certify.sh` | 4-gate pipeline, clearance report JSON |
+| Skill export | `tools/skill-export.sh` | Certify + package for vault transfer |
+| Skill download | `tools/skill-download.sh` | Download from ClawHub to quarantine |
+| AI-assisted skill creation | `tools/skill-create.sh`, `tools/lib/create-draft.sh`, `tools/lib/create-tests.sh` | Interactive + non-interactive, Ollama-powered |
 | Registry browser | `tools/registry-explore.sh` | API-dependent (may not be live) |
 | Adoption metrics | `tools/skill-stats.sh` | API-dependent (may not be live) |
 | Health check | `tools/workbench-verify.sh` | 12-point verification |
@@ -240,25 +246,15 @@ User clicks "Publish" on a skill in GUI
 | CI pipeline | `.github/workflows/skill-ci.yml` | lint->scan->test on PR (publish commented out) |
 | Makefile | `Makefile` | 35+ targets, single entry point |
 | component.yml | `component.yml` | 15 commands for Lobster-TrApp GUI |
-| AI-assisted skill creation | `tools/skill-create.sh`, `tools/lib/create-draft.sh`, `tools/lib/create-tests.sh` | Interactive + non-interactive, Ollama-powered |
 | Suppression system | `.scanignore` files, inline `<!-- scan:ignore -->` | Range-limited (50-line max) |
 
 ### NOT Implemented
 
 | Feature | Priority | Notes |
 |---------|----------|-------|
-| **CDR (Content Disarm & Reconstruction)** | HIGHEST | The novel security innovation -- does not exist yet |
-| **Isolated LLM scanning layer** | HIGHEST | No Ollama/LLM integration exists |
-| **Security certificate generation** | HIGH | Clearance report JSON format spec'd but not built |
-| **`make export SKILL=name`** | HIGH | Packages skill + certificate for vault transfer |
-| **Skill download mechanism** | HIGH | No way to download from ClawHub within forge |
-| ~~AI-assisted skill creation~~ | ~~MEDIUM~~ | Implemented in Phase 4 (2026-04-03) — see Fully Implemented table |
-| **.trust files for any skill** | MEDIUM | System exists, zero artifacts generated |
-| **`.devcontainer/setup.sh`** | LOW | Referenced but file missing |
-| **Auto-publish CI job** | LOW | Commented out in CI pipeline |
-| **`coding-agent` skill cleanup** | LOW | Excluded from publish, no tests |
-| **Duplicate `docs/security-report.md`** | LOW | Keep `docs/research/` version, delete root |
-| **Registry API liveness** | UNKNOWN | `clawdhub.com/api/v1` may not be live |
+| **Auto-publish CI job** | LOW | Commented out in CI pipeline (Phase 5) |
+| **`coding-agent` skill cleanup** | LOW | Has SKILL.md but excluded from pipeline, no tests |
+| **Registry API liveness** | UNKNOWN | `clawdhub.com/api/v1` may not be live — affects stats + explore |
 
 ---
 
@@ -310,27 +306,28 @@ clawhub-forge/
 |   +-- workbench-verify.sh   12-point health check
 |   +-- pipeline-report.sh    Value summary
 |
-+-- tools/ (TO BUILD)
 |   +-- skill-download.sh     Download skill to quarantine
-|   +-- skill-cdr.sh          Content Disarm & Reconstruction orchestrator
+|   +-- skill-cdr.sh          CDR orchestrator (quarantine -> prefilter -> intent -> rebuild -> verify)
 |   +-- skill-export.sh       Package skill + clearance report for vault
-|   +-- skill-certify.sh      Generate security certificate JSON
+|   +-- skill-certify.sh      4-gate pipeline + security certificate JSON
+|   +-- skill-create.sh       AI-assisted skill creation wizard
 |   +-- lib/
-|       +-- cdr-sanitizer.sh  Pre-filter: extract safe lines for LLM
+|       +-- cdr-prefilter.sh  Pre-filter: extract safe lines for LLM
 |       +-- cdr-intent.sh     Send to isolated LLM, get structured intent
-|       +-- cdr-generator.sh  Rebuild SKILL.md from intent + template
+|       +-- create-draft.sh   Ollama-powered skill drafting
+|       +-- create-tests.sh   Ollama-powered test generation
 |
-+-- quarantine/               TO BUILD -- isolated zone for untrusted files
-|   +-- (downloaded skills land here, never in workspace)
++-- quarantine/               Created at runtime by CDR pipeline
+|   +-- (downloaded skills land here, never in workspace, deleted after CDR)
 |
-+-- certificates/             TO BUILD -- generated security certificates
++-- certificates/             Generated by skill-certify.sh
 |   +-- (clearance reports for published/exported skills)
 |
-+-- skills/                   EXISTING -- 25 published skills
-+-- templates/                EXISTING -- 3 skill templates
-+-- tests/                    EXISTING -- 25 test files + framework
-+-- config/                   TO BUILD
-    +-- cdr.conf              CDR configuration (LLM backend, model, etc.)
++-- skills/                   25 published skills (all with .trust files)
++-- templates/                3 skill templates (cli-tool, workflow, language-ref)
++-- tests/                    26 test files + 10 tool tests + framework
++-- config/
+    +-- cdr.conf              CDR configuration (LLM backend, model, prompts)
 ```
 
 ---
@@ -607,4 +604,4 @@ HOST SYSTEM (user's computer)
 
 *This document replaces the previous scattered descriptions of clawhub-forge's identity. All future development should reference this as the authoritative design.*
 
-*Last updated: 2026-04-02*
+*Last updated: 2026-04-04 — Phases 1-4 complete, only Phase 5 (CI/CD) remains*
