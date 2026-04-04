@@ -252,9 +252,8 @@ User clicks "Publish" on a skill in GUI
 
 | Feature | Priority | Notes |
 |---------|----------|-------|
-| **Auto-publish CI job** | LOW | Commented out in CI pipeline (Phase 5) |
-| **`coding-agent` skill cleanup** | LOW | Has SKILL.md but excluded from pipeline, no tests |
-| **Registry API liveness** | UNKNOWN | `clawdhub.com/api/v1` may not be live — affects stats + explore |
+| **Auto-publish CI job** | LOW | Commented out in CI pipeline (Phase 5, deferred pending ClawHub API) |
+| **Registry API liveness** | UNKNOWN | `clawdhub.com/api/v1` may not be live — affects stats, explore, publish |
 
 ---
 

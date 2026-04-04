@@ -76,9 +76,11 @@
 
 ---
 
-## Phase 5: CI/CD and Registry Integration
+## Phase 5: CI/CD and Registry Integration — DEFERRED
 
 **Why:** The auto-publish CI job is commented out. For a production release, the pipeline should be automated with certificates.
+
+**Status:** Deferred pending ClawHub API availability. The `clawdhub.com/api/v1` endpoints used by `skill-stats.sh`, `registry-explore.sh`, and `skill-publish.sh` have not been verified as live. When the API becomes accessible, this phase can proceed.
 
 | Task | Details |
 |---|---|
@@ -112,4 +114,4 @@ Phase 5 (CI/CD) <-- final polish
 
 *This roadmap covers the clawhub-forge module only. See `openclaw-vault/docs/roadmap.md` and `moltbook-pioneer/docs/roadmap.md` for the other modules. See `docs/forge-identity-and-design.md` for the full identity, architecture, and design rationale.*
 
-*Last updated: 2026-04-03*
+*Last updated: 2026-04-04*
