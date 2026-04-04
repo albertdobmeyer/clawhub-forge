@@ -1,4 +1,4 @@
-.PHONY: help new lint lint-one scan scan-one scan-json scan-sarif scan-summary scan-strict test test-one test-tools publish stats stats-trend stats-rank check check-all self-test verify verify-skill verify-all verify-report trust-all certify certify-all export download cdr cdr-download explore report clean
+.PHONY: help new create create-noninteractive lint lint-one scan scan-one scan-json scan-sarif scan-summary scan-strict test test-one test-tools publish stats stats-trend stats-rank check check-all self-test verify verify-skill verify-all verify-report trust-all certify certify-all export download cdr cdr-download explore report clean
 
 SHELL := /bin/bash
 SKILLS_DIR := skills
@@ -16,6 +16,12 @@ help: ## Show available commands
 
 new: ## Scaffold new skill from template (SKILL=name TYPE=cli-tool|workflow|language-ref)
 	@bash $(TOOLS_DIR)/skill-new.sh "$(SKILL)" "$(or $(TYPE),cli-tool)"
+
+create: ## AI-assisted skill creation wizard (interactive)
+	@bash $(TOOLS_DIR)/skill-create.sh
+
+create-noninteractive: ## AI skill creation (non-interactive, for GUI)
+	@bash $(TOOLS_DIR)/skill-create.sh --name "$(NAME)" --type "$(TYPE)" --description "$(DESC)" $(if $(COMMANDS),--commands "$(COMMANDS)") $(if $(TIPS),--tips "$(TIPS)")
 
 lint: ## Lint all skills (frontmatter + structure + content)
 	@bash $(TOOLS_DIR)/skill-lint.sh $(SKILLS_DIR)

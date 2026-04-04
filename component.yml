@@ -47,6 +47,39 @@ status:
 
 commands:
   # Operations — Skill Development
+  - id: create-skill
+    name: Create Skill (AI)
+    description: AI-assisted skill creation — describe what you want and the forge drafts it
+    group: operations
+    type: action
+    danger: safe
+    command: make create-noninteractive NAME=${skill_name} TYPE=${template_type} DESC="${description}"
+    args:
+      - id: skill_name
+        name: Skill Name
+        description: Name for the new skill (lowercase, hyphens)
+        type: string
+        required: true
+      - id: template_type
+        name: Template Type
+        description: Skill template type
+        type: enum
+        required: true
+        options:
+          - cli-tool
+          - workflow
+          - language-ref
+      - id: description
+        name: Description
+        description: Describe what this skill should teach (2-3 sentences)
+        type: string
+        required: true
+    output:
+      format: ansi
+      display: terminal
+    sort_order: 5
+    timeout_seconds: 300
+
   - id: new-skill
     name: New Skill
     description: Scaffold a new ClawHub skill from template
