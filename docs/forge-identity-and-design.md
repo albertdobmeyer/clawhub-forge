@@ -238,8 +238,9 @@ User clicks "Publish" on a skill in GUI
 | Scanner self-test | `tests/scanner-self-test/` | 10-point accuracy validation |
 | Post-install quarantine | `.devcontainer/setup.sh` | `molthub-safe` wrapper blocks + auto-scans |
 | CI pipeline | `.github/workflows/skill-ci.yml` | lint->scan->test on PR (publish commented out) |
-| Makefile | `Makefile` | 35 targets, single entry point |
-| component.yml | `component.yml` | 14 commands for Lobster-TrApp GUI |
+| Makefile | `Makefile` | 35+ targets, single entry point |
+| component.yml | `component.yml` | 15 commands for Lobster-TrApp GUI |
+| AI-assisted skill creation | `tools/skill-create.sh`, `tools/lib/create-draft.sh`, `tools/lib/create-tests.sh` | Interactive + non-interactive, Ollama-powered |
 | Suppression system | `.scanignore` files, inline `<!-- scan:ignore -->` | Range-limited (50-line max) |
 
 ### NOT Implemented
@@ -251,7 +252,7 @@ User clicks "Publish" on a skill in GUI
 | **Security certificate generation** | HIGH | Clearance report JSON format spec'd but not built |
 | **`make export SKILL=name`** | HIGH | Packages skill + certificate for vault transfer |
 | **Skill download mechanism** | HIGH | No way to download from ClawHub within forge |
-| **AI-assisted skill creation** | MEDIUM | Templates exist but no AI guidance layer |
+| ~~AI-assisted skill creation~~ | ~~MEDIUM~~ | Implemented in Phase 4 (2026-04-03) — see Fully Implemented table |
 | **.trust files for any skill** | MEDIUM | System exists, zero artifacts generated |
 | **`.devcontainer/setup.sh`** | LOW | Referenced but file missing |
 | **Auto-publish CI job** | LOW | Commented out in CI pipeline |

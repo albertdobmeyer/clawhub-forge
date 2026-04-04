@@ -1,7 +1,7 @@
 # ClawHub-Forge Roadmap
 
-**Updated:** 2026-04-02
-**Current state:** 25 published skills, 87-pattern scanner, zero-trust verifier, gated publishing pipeline, 168 behavioral test assertions. Identity and feature set defined in `docs/forge-identity-and-design.md`.
+**Updated:** 2026-04-03
+**Current state:** 25 published skills, 87-pattern scanner, zero-trust verifier, gated publishing pipeline, 168 behavioral test assertions, AI-assisted skill creation wizard. Identity and feature set defined in `docs/forge-identity-and-design.md`.
 **Cross-reference:** See `docs/trifecta.md` in the lobster-trapp root for how this module fits with openclaw-vault and moltbook-pioneer.
 
 ---
@@ -62,17 +62,17 @@
 
 ---
 
-## Phase 4: AI-Assisted Skill Creation
+## Phase 4: AI-Assisted Skill Creation — COMPLETED (2026-04-03)
 
 **Why:** Non-technical users need help writing properly formatted SKILL.md files. Reuses the CDR's LLM infrastructure.
 
-| Task | Details |
-|---|---|
-| Design creation wizard spec | What questions to ask, how to map answers to template. |
-| Build guided creation flow | Natural language -> template selection -> AI draft -> pipeline verification. |
-| Integration with Ollama/API | Use same LLM backend as CDR for skill drafting. |
+| Task | Details | Status |
+|---|---|---|
+| Design creation wizard spec | What questions to ask, how to map answers to template. | Done — `docs/specs/2026-04-03-ai-assisted-skill-creation.md` |
+| Build guided creation flow | Natural language -> template selection -> AI draft -> pipeline verification. | Done — `tools/skill-create.sh` (interactive + non-interactive) |
+| Integration with Ollama/API | Use same LLM backend as CDR for skill drafting. | Done — `tools/lib/create-draft.sh`, `tools/lib/create-tests.sh` |
 
-**Exit criteria:** A non-technical user can describe a skill in plain language and get a verified SKILL.md.
+**Exit criteria:** A non-technical user can describe a skill in plain language and get a verified SKILL.md. **MET** — two end-to-end runs (cli-tool + workflow types) passed on first attempt.
 
 ---
 
@@ -112,4 +112,4 @@ Phase 5 (CI/CD) <-- final polish
 
 *This roadmap covers the clawhub-forge module only. See `openclaw-vault/docs/roadmap.md` and `moltbook-pioneer/docs/roadmap.md` for the other modules. See `docs/forge-identity-and-design.md` for the full identity, architecture, and design rationale.*
 
-*Last updated: 2026-04-02*
+*Last updated: 2026-04-03*

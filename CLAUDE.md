@@ -82,6 +82,8 @@ clawhub-forge/
 ### Development
 ```bash
 make new SKILL=name               # Scaffold new skill
+make create                        # AI-assisted skill creation (interactive)
+make create-noninteractive NAME=n TYPE=t DESC="d"  # AI skill creation (non-interactive, for GUI)
 make lint                          # Lint all skills
 make scan                          # Security scan all skills
 make scan-one SKILL=name           # Scan single skill
