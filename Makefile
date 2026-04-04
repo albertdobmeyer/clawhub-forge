@@ -1,4 +1,4 @@
-.PHONY: help new create create-noninteractive lint lint-one scan scan-one scan-json scan-sarif scan-summary scan-strict test test-one test-tools publish stats stats-trend stats-rank check check-all self-test verify verify-skill verify-all verify-report trust-all certify certify-all export download cdr cdr-download explore report clean
+.PHONY: help new create create-noninteractive lint lint-one lint-all scan scan-one scan-json scan-sarif scan-summary scan-strict scan-all test test-one test-tools publish stats stats-trend stats-rank check check-all self-test verify verify-skill verify-all verify-report trust-all certify certify-all export download cdr cdr-download explore report clean
 
 SHELL := /bin/bash
 SKILLS_DIR := skills
@@ -46,6 +46,10 @@ scan-summary: ## Scan all skills, one-line summary output
 
 scan-strict: ## Scan with --strict (HIGH findings block)
 	@bash $(TOOLS_DIR)/skill-scan.sh --strict $(SKILLS_DIR)
+
+lint-all: lint  ## Alias: lint all skills
+
+scan-all: scan  ## Alias: scan all skills
 
 self-test: ## Run scanner self-test (known-bad/clean/allowlisted)
 	@bash $(TESTS_DIR)/scanner-self-test/run.sh
