@@ -1,6 +1,6 @@
 # ClawHub-Forge Roadmap
 
-**Updated:** 2026-04-03
+**Updated:** 2026-04-07
 **Current state:** 25 published skills, 87-pattern scanner, zero-trust verifier, gated publishing pipeline, 168 behavioral test assertions, AI-assisted skill creation wizard. Identity and feature set defined in `docs/forge-identity-and-design.md`.
 **Cross-reference:** See `docs/trifecta.md` in the lobster-trapp root for how this module fits with openclaw-vault and moltbook-pioneer.
 
@@ -76,6 +76,22 @@
 
 ---
 
+## Phase 5a: Finalization Polish
+
+**Why:** Three items that improve dashboard value and developer experience, identified during the ecosystem-wide progress assessment.
+
+**Cross-reference:** See `docs/roadmap-v4-finalization.md` in the lobster-trapp root (Phase I, tasks I2-I4).
+
+| Task | Details |
+|---|---|
+| CDR Ollama fallback | `tools/lib/cdr-intent.sh:30-35` hard-fails if Ollama is unreachable. Add cached intent fallback, configurable remote endpoint, graceful error message. |
+| Health metrics expansion | Add `lint-health`, `scan-health`, `test-health` to `component.yml` health section. Commands already exist (`make lint-all`, `make scan-all`, `make test`). |
+| skill-create non-interactive fix | `tools/skill-create.sh` lines 109/123 skip `--commands`/`--tips` in non-interactive mode. Fix to accept these args or proceed to AI generation when empty. |
+
+**Exit criteria:** CDR degrades gracefully without Ollama. Forge dashboard shows 3+ health badges. Non-interactive skill creation works end-to-end.
+
+---
+
 ## Phase 5: CI/CD and Registry Integration — DEFERRED
 
 **Why:** The auto-publish CI job is commented out. For a production release, the pipeline should be automated with certificates.
@@ -107,11 +123,14 @@ Phase 3 (CDR) <-- the core innovation, depends on certificates for output
 Phase 4 (AI Creation) <-- reuses CDR's LLM infrastructure
     |
     v
-Phase 5 (CI/CD) <-- final polish
+Phase 5a (Finalization Polish) <-- CDR fallback, health metrics, skill-create fix
+    |
+    v
+Phase 5 (CI/CD) <-- deferred (ClawHub API)
 ```
 
 ---
 
 *This roadmap covers the clawhub-forge module only. See `openclaw-vault/docs/roadmap.md` and `moltbook-pioneer/docs/roadmap.md` for the other modules. See `docs/forge-identity-and-design.md` for the full identity, architecture, and design rationale.*
 
-*Last updated: 2026-04-04*
+*Last updated: 2026-04-07*
