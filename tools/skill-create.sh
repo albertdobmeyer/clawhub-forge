@@ -106,7 +106,7 @@ echo -e "  ${GREEN}OK${RESET}"
 
 # ── Step 4: Key Commands ──
 echo -e "${BOLD}[4/6] Key Commands${RESET}"
-if [[ -z "$COMMANDS" && "$INTERACTIVE" == true ]]; then
+if [[ -z "$COMMANDS" ]] && [[ "$INTERACTIVE" == true ]]; then
   echo "  Comma-separated commands, or blank to let AI decide:"
   printf "  > "
   read -r COMMANDS
@@ -120,7 +120,7 @@ fi
 
 # ── Step 5: Tips ──
 echo -e "${BOLD}[5/6] Tips${RESET}"
-if [[ -z "$TIPS" && "$INTERACTIVE" == true ]]; then
+if [[ -z "$TIPS" ]] && [[ "$INTERACTIVE" == true ]]; then
   echo "  Comma-separated tips, or blank to let AI decide:"
   printf "  > "
   read -r TIPS

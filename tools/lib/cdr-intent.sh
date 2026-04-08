@@ -27,10 +27,26 @@ if [[ -z "$INPUT_FILE" || ! -f "$INPUT_FILE" ]]; then
   exit 1
 fi
 
+# Derive cached intent path from input file
+CACHED_INTENT="${INPUT_FILE%.json}.intent.json"
+
+# Extract Ollama host from endpoint for reachability check
+CDR_HOST=$(echo "$CDR_ENDPOINT" | sed -E 's|(https?://[^/]+).*|\1|')
+
 # Check Ollama is reachable
-if ! curl -sf --max-time 5 "http://localhost:11434/api/tags" > /dev/null 2>&1; then
-  echo "Error: Ollama is not running at localhost:11434" >&2
-  echo "Start it with: ollama serve" >&2
+if ! curl -sf --max-time 5 "${CDR_HOST}/api/tags" > /dev/null 2>&1; then
+  # Fallback: use cached intent if available
+  if [[ -f "$CACHED_INTENT" ]]; then
+    echo "Warning: Ollama unreachable at ${CDR_HOST} — using cached intent" >&2
+    cat "$CACHED_INTENT"
+    exit 0
+  fi
+  echo "Error: Ollama is not reachable at ${CDR_HOST}" >&2
+  echo "" >&2
+  echo "To fix this, either:" >&2
+  echo "  1. Start Ollama:  ollama serve" >&2
+  echo "  2. Set a remote endpoint in config/cdr.conf:  CDR_ENDPOINT=http://host:11434/api/generate" >&2
+  echo "  3. Re-run after a previous successful extraction (cached intent will be used)" >&2
   exit 1
 fi
 
@@ -107,5 +123,8 @@ print()
   echo "Error: Intent extraction failed" >&2
   exit 1
 }
+
+# Cache successful result for offline fallback
+echo "$RESPONSE" > "$CACHED_INTENT"
 
 echo "$RESPONSE"

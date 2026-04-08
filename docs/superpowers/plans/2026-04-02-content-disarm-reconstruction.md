@@ -350,7 +350,7 @@ if __name__ == '__main__':
 
 ```bash
 chmod +x tools/lib/cdr-parse.py
-cd /home/albertd/Repositories/lobster-trapp/components/clawhub-forge
+cd components/clawhub-forge
 python3 tools/lib/cdr-parse.py tests/cdr-fixtures/clean-skill.md | python3 -m json.tool | head -20
 ```
 
@@ -507,7 +507,7 @@ fi
 
 ```bash
 chmod +x tools/lib/cdr-prefilter.sh
-cd /home/albertd/Repositories/lobster-trapp/components/clawhub-forge
+cd components/clawhub-forge
 python3 tools/lib/cdr-parse.py tests/cdr-fixtures/injected-skill.md > /tmp/parsed.json
 bash tools/lib/cdr-prefilter.sh /tmp/parsed.json > /tmp/filtered.json 2>&1
 echo "EXIT: $?"
@@ -655,7 +655,7 @@ chmod +x tools/lib/cdr-intent.sh
 - [ ] **Step 3: Test with clean fixture (requires Ollama running)**
 
 ```bash
-cd /home/albertd/Repositories/lobster-trapp/components/clawhub-forge
+cd components/clawhub-forge
 python3 tools/lib/cdr-parse.py tests/cdr-fixtures/clean-skill.md > /tmp/cdr-parsed.json
 bash tools/lib/cdr-prefilter.sh /tmp/cdr-parsed.json > /tmp/cdr-filtered.json 2>&1
 bash tools/lib/cdr-intent.sh /tmp/cdr-filtered.json 2>&1 | python3 -m json.tool | head -20
@@ -907,7 +907,7 @@ if __name__ == '__main__':
 
 ```bash
 chmod +x tools/lib/cdr-validate.py tools/lib/cdr-reconstruct.py
-cd /home/albertd/Repositories/lobster-trapp/components/clawhub-forge
+cd components/clawhub-forge
 
 # Test valid intent
 echo '{"name":"test","purpose":"A test skill for validation","use_cases":["testing"],"commands":[{"cmd":"echo hi","context":"greeting"}],"tips":["be careful"],"patterns":[]}' > /tmp/test-intent.json
@@ -1224,7 +1224,7 @@ chmod +x tools/skill-cdr.sh
 - [ ] **Step 3: Test with clean fixture (requires Ollama running)**
 
 ```bash
-cd /home/albertd/Repositories/lobster-trapp/components/clawhub-forge
+cd components/clawhub-forge
 bash tools/skill-cdr.sh tests/cdr-fixtures/clean-skill.md 2>&1
 ```
 
@@ -1324,7 +1324,7 @@ Add after the `export` command:
 - [ ] **Step 3: Validate YAML**
 
 ```bash
-cd /home/albertd/Repositories/lobster-trapp/components/clawhub-forge
+cd components/clawhub-forge
 python3 -c "import yaml; yaml.safe_load(open('component.yml')); print('VALID')"
 ```
 
@@ -1492,7 +1492,7 @@ fi
 
 ```bash
 chmod +x tests/cdr-pipeline.test.sh
-cd /home/albertd/Repositories/lobster-trapp/components/clawhub-forge
+cd components/clawhub-forge
 bash tests/cdr-pipeline.test.sh
 ```
 
@@ -1510,7 +1510,7 @@ git commit -m "feat: CDR pipeline tests (parser, pre-filter, validation, reconst
 ### Task 11: Vault skill guard (cross-module)
 
 **Files:**
-- Create: `/home/albertd/Repositories/lobster-trapp/components/openclaw-vault/scripts/verify-skills.sh`
+- Create: `components/openclaw-vault/scripts/verify-skills.sh`
 
 - [ ] **Step 1: Create verify-skills.sh**
 
@@ -1605,8 +1605,8 @@ echo ""
 - [ ] **Step 2: Make executable and commit**
 
 ```bash
-chmod +x /home/albertd/Repositories/lobster-trapp/components/openclaw-vault/scripts/verify-skills.sh
-cd /home/albertd/Repositories/lobster-trapp/components/openclaw-vault
+chmod +x components/openclaw-vault/scripts/verify-skills.sh
+cd components/openclaw-vault
 git add scripts/verify-skills.sh
 git commit -m "feat: vault skill guard — verify installed skills have trust files"
 ```
@@ -1632,7 +1632,7 @@ to:
 - [ ] **Step 2: Run existing test suites (regression)**
 
 ```bash
-cd /home/albertd/Repositories/lobster-trapp/components/clawhub-forge
+cd components/clawhub-forge
 make self-test 2>&1 | tail -3
 make test 2>&1 | tail -5
 ```
@@ -1665,11 +1665,11 @@ rm -rf skills/test-clean/
 - [ ] **Step 6: Commit and push**
 
 ```bash
-cd /home/albertd/Repositories/lobster-trapp/components/clawhub-forge
+cd components/clawhub-forge
 git add TODO.md
 git commit -m "docs: mark Phase 3 (CDR) complete"
 git push
 
-cd /home/albertd/Repositories/lobster-trapp/components/openclaw-vault
+cd components/openclaw-vault
 git push
 ```

@@ -426,3 +426,45 @@ health:
       green: ">= 1"
       yellow: "== 0"
       red: "< 0"
+
+  - id: lint-health
+    name: Lint
+    command: make lint-all 2>/dev/null | grep -c 'PASS' || echo 0
+    interval_seconds: 60
+    timeout_seconds: 30
+    parse:
+      type: regex
+      expression: "(\\d+)"
+      format: "{value} passing"
+    thresholds:
+      green: ">= 1"
+      yellow: "== 0"
+      red: "< 0"
+
+  - id: scan-health
+    name: Scans
+    command: make scan-all 2>/dev/null | grep -c 'CLEAN\|PASS' || echo 0
+    interval_seconds: 60
+    timeout_seconds: 30
+    parse:
+      type: regex
+      expression: "(\\d+)"
+      format: "{value} clean"
+    thresholds:
+      green: ">= 1"
+      yellow: "== 0"
+      red: "< 0"
+
+  - id: test-health
+    name: Tests
+    command: make test 2>/dev/null | grep -c 'PASS' || echo 0
+    interval_seconds: 60
+    timeout_seconds: 30
+    parse:
+      type: regex
+      expression: "(\\d+)"
+      format: "{value} passing"
+    thresholds:
+      green: ">= 1"
+      yellow: "== 0"
+      red: "< 0"
