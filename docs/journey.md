@@ -1,6 +1,6 @@
 # ClawdHub Registry: Research, Contribution & Ecosystem Analysis
 
-**Author**: Albert K Dobmeyer (@gitgoodordietrying)
+**Author**: Albert K Dobmeyer (@albertdobmeyer)
 **Date**: 2026-02-03
 **Duration**: Single session, from first `npm info` to twenty-four published skills, ecosystem security audit, and clean exit
 **Tools used**: Claude Code (Opus 4.5), Docker Desktop 4.59.0 Sandbox, molthub v0.3.1-beta.1
@@ -569,7 +569,7 @@ Read the molthub CLI source code (`node_modules/molthub/dist/skills.js` and `dis
 
 ## Registry Presence
 
-All twenty-four skills live at `https://clawdhub.com` under **@gitgoodordietrying**:
+All twenty-four skills live at `https://clawdhub.com` under **@albertdobmeyer**:
 
 **Batch 1 — Gold rush gap-fill (built in Docker sandbox)**
 - [`/docker-sandbox`](https://clawdhub.com/skills/docker-sandbox) — v1.0.0

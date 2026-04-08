@@ -209,9 +209,9 @@ metadata: {"clawdbot":{"emoji":"...","requires":{"bins":["cmd1"],"anyBins":["cmd
 - ~~**No infrastructure-as-code skill**~~ → filled by `infra-as-code`
 - ~~**No performance profiling skill**~~ → filled by `perf-profiler`
 
-All ten gaps filled by skills published under **@gitgoodordietrying** during this session. An additional ten niche developer-essential skills were published to deepen coverage.
+All ten gaps filled by skills published under **@albertdobmeyer** during this session. An additional ten niche developer-essential skills were published to deepen coverage.
 
-### Published Skills (@gitgoodordietrying)
+### Published Skills (@albertdobmeyer)
 
 #### Batch 1 — Gold Rush Gap-Fill
 

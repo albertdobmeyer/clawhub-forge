@@ -25,7 +25,7 @@ The forge makes all security decisions FOR the user and presents clear pass/fail
 
 ## This Repo Is a Lobster-TrApp Component
 
-This repo is integrated into [lobster-trapp](https://github.com/gitgoodordietrying/lobster-trapp) as a git submodule under `components/clawhub-forge/`. The file `component.yml` in this repo's root is the **manifest contract** that tells the Lobster-TrApp GUI how to discover, display, and control this component.
+This repo is integrated into [lobster-trapp](https://github.com/albertdobmeyer/lobster-trapp) as a git submodule under `components/clawhub-forge/`. The file `component.yml` in this repo's root is the **manifest contract** that tells the Lobster-TrApp GUI how to discover, display, and control this component.
 
 ### Manifest Contract Rules
 - `component.yml` must always parse as valid YAML
@@ -146,7 +146,7 @@ The original downloaded file is NEVER accessible. Binary: clean rebuild or disca
 
 This repo may exist as both a standalone clone and a submodule under lobster-trapp.
 
-**GitHub**: https://github.com/gitgoodordietrying/clawhub-forge
+**GitHub**: https://github.com/albertdobmeyer/clawhub-forge
 
 After pushing changes from either location, sync the other:
 ```bash

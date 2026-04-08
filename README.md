@@ -1,10 +1,10 @@
 # clawhub-forge
 
-[![Skill CI](https://github.com/gitgoodordietrying/clawhub-forge/actions/workflows/skill-ci.yml/badge.svg)](https://github.com/gitgoodordietrying/clawhub-forge/actions/workflows/skill-ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Skill CI](https://github.com/albertdobmeyer/clawhub-forge/actions/workflows/skill-ci.yml/badge.svg)](https://github.com/albertdobmeyer/clawhub-forge/actions/workflows/skill-ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 The Skill Development Workbench for [ClawHub](https://clawdhub.com). An offline-first pipeline to build, validate, and publish agent skills: `make new` → `make lint` → `make scan` → `make test` → `make publish`.
 
-**Author**: [@gitgoodordietrying](https://github.com/gitgoodordietrying)
+**Author**: [@albertdobmeyer](https://github.com/albertdobmeyer)
 
 ---
 
@@ -14,7 +14,7 @@ A complete development workbench for ClawHub skills. Twenty-five published skill
 
 **What you can do here:** scaffold new skills from templates, lint them for structure and content quality, scan them for malicious patterns (offline, no network required), run behavioral tests, and publish through a gated pipeline.
 
-**What this isn't:** a runtime for running OpenClaw agents, or a sandbox for executing untrusted code. For that, see [openclaw-vault](https://github.com/gitgoodordietrying/openclaw-vault) — the hardened container companion where your API key never enters the container.
+**What this isn't:** a runtime for running OpenClaw agents, or a sandbox for executing untrusted code. For that, see [openclaw-vault](https://github.com/albertdobmeyer/openclaw-vault) — the hardened container companion where your API key never enters the container.
 
 ---
 
@@ -337,8 +337,8 @@ Install any skill with `molthub install <slug>`. Skills are placed in `./skills/
 
 These three repos form a trifecta for safe engagement with the OpenClaw ecosystem:
 
-- **[openclaw-vault](https://github.com/gitgoodordietrying/openclaw-vault)** — Run agents safely. Hardened container with proxy-side API key injection, domain allowlisting, kill switch, 15-point security verification.
-- **[moltbook-pioneer](https://github.com/gitgoodordietrying/moltbook-pioneer)** — Socialize safely. Research and safe participation in the Moltbook agentic social network. Feed scanner, agent census, identity management.
+- **[openclaw-vault](https://github.com/albertdobmeyer/openclaw-vault)** — Run agents safely. Hardened container with proxy-side API key injection, domain allowlisting, kill switch, 15-point security verification.
+- **[moltbook-pioneer](https://github.com/albertdobmeyer/moltbook-pioneer)** — Socialize safely. Research and safe participation in the Moltbook agentic social network. Feed scanner, agent census, identity management.
 
 ---
 
