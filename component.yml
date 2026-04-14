@@ -26,9 +26,9 @@ status:
       color: "#ef4444"
 
   probes:
-    - command: test -f Makefile && make workbench-verify --quiet 2>/dev/null && echo ready
+    - command: test -f Makefile && test -d skills && test -d tools && echo ready
       interval_seconds: 30
-      timeout_seconds: 15
+      timeout_seconds: 5
       rules:
         - stdout_contains: ready
           state: ready
