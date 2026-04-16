@@ -42,6 +42,25 @@ bash tests/orchestrator-check.sh    # Validates all manifests including this one
 cargo test -p lobster-trapp          # Rust tests parse this manifest specifically
 ```
 
+## Containerized Deployment (Perimeter Model)
+
+In production, forge runs inside **vault-forge** — a dedicated container in the Lobster-TrApp 4-container perimeter. All untrusted content (downloaded SKILL files) is processed inside this container, never on the user's host machine.
+
+- **Containerfile** in this repo's root defines the image (~233MB, python:3.10-slim + bash toolchain)
+- **vault-forge** is one of 4 services in `compose.yml` at the lobster-trapp root
+- Runs on **forge-net** (internal network) — can reach vault-proxy but CANNOT reach vault-agent or vault-pioneer
+- Certified skills delivered to agent via **forge-deliveries** shared volume (write in forge, read-only in agent)
+- Non-root user, capabilities dropped, 1GB memory limit
+- HTTPS through vault-proxy (mitmproxy CA cert shared via environment)
+
+| Context | How Forge Runs | When to Use |
+|---------|---------------|-------------|
+| **Development** | CLI/Makefile on host (`make scan`, `make test`) | Feature development, debugging, writing new patterns |
+| **Production** | Inside vault-forge container via compose | Deployed perimeter, user-facing product |
+| **Integration testing** | `podman compose up vault-forge` | Verifying container behavior and network isolation |
+
+The CLI/Makefile usage documented below still applies for development. The Containerfile copies this repo and runs the same bash toolchain.
+
 ## Directory Structure
 
 ```
@@ -128,7 +147,7 @@ make new → make lint → make scan → make verify-skill → make test → mak
                                                             ALL must pass
 ```
 
-### Content Disarm & Reconstruction (planned — see design doc)
+### Content Disarm & Reconstruction (CDR)
 ```
 Download → Quarantine → Pre-filter (87 patterns) → Isolated LLM extracts intent
     → Generator rebuilds clean SKILL.md → Post-verify → Deliver or Discard
