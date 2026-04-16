@@ -468,3 +468,104 @@ health:
       green: ">= 1"
       yellow: "== 0"
       red: "< 0"
+
+# ─── Workflows ────────────────────────────────────────────────────
+# Multi-step automated sequences. The GUI and Claude Code execute
+# these as single user-facing actions.
+workflows:
+  - id: vet-skill
+    name: Check Skill Safety
+    description: Run the full security pipeline on a single skill
+    user_description: >
+      Scans the skill for 87 known malware patterns, verifies every
+      line of code, and generates a security certificate. If anything
+      looks suspicious, the skill is rejected.
+    trigger: manual
+    danger: safe
+    steps:
+      - id: lint
+        command: lint
+        args:
+          skill: "{{input.skill}}"
+        abort_on_failure: true
+      - id: scan
+        command: scan
+        args:
+          skill: "{{input.skill}}"
+        depends_on: lint
+        abort_on_failure: true
+      - id: verify
+        command: verify
+        args:
+          skill: "{{input.skill}}"
+        depends_on: scan
+        abort_on_failure: true
+      - id: certify
+        command: certify
+        args:
+          skill: "{{input.skill}}"
+        depends_on: verify
+    inputs:
+      - id: skill
+        type: string
+        label: Skill name
+        description: Name of the skill to vet (from the skills/ directory)
+        required: true
+    output:
+      display: checklist
+      summary_step: certify
+
+  - id: safe-download
+    name: Download Skill Safely
+    description: Download a skill from ClawHub via CDR and deliver to agent workspace
+    user_description: >
+      Downloads the skill into a secure sandbox, scans it for malware,
+      rebuilds it from scratch to remove any hidden content, and
+      delivers the clean version to your assistant.
+    trigger: manual
+    danger: caution
+    shell_requirement: split
+    steps:
+      - id: download-cdr
+        command: download-safe
+        args:
+          skill_name: "{{input.skill_name}}"
+        abort_on_failure: true
+      - id: export
+        command: export
+        args:
+          skill: "{{input.skill_name}}"
+        depends_on: download-cdr
+    inputs:
+      - id: skill_name
+        type: string
+        label: Skill name
+        description: ClawHub skill name to download
+        required: true
+    output:
+      display: checklist
+      summary_step: export
+
+  - id: full-check
+    name: Full Pipeline Check
+    description: Run lint + scan + test on all skills
+    user_description: >
+      Runs the complete security pipeline on every skill in the
+      workbench. This checks structure, scans for threats, and
+      runs behavioral tests.
+    trigger: manual
+    danger: safe
+    steps:
+      - id: lint-all
+        command: lint-all
+        abort_on_failure: false
+      - id: scan-all
+        command: scan-all
+        depends_on: lint-all
+        abort_on_failure: false
+      - id: verify-all
+        command: verify-all
+        depends_on: scan-all
+    output:
+      display: report
+      summary_step: verify-all
