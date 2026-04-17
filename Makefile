@@ -1,9 +1,15 @@
-.PHONY: help new create create-noninteractive lint lint-one lint-all scan scan-one scan-json scan-sarif scan-summary scan-strict scan-all test test-one test-tools publish stats stats-trend stats-rank check check-all self-test verify verify-skill verify-all verify-report trust-all certify certify-all export download cdr cdr-download explore report clean
+.PHONY: help setup new create create-noninteractive lint lint-one lint-all scan scan-one scan-json scan-sarif scan-summary scan-strict scan-all test test-one test-tools publish stats stats-trend stats-rank check check-all self-test verify verify-skill verify-all verify-report trust-all certify certify-all export download cdr cdr-download explore report clean
 
 SHELL := /bin/bash
 SKILLS_DIR := skills
 TOOLS_DIR := tools
 TESTS_DIR := tests
+
+setup: ## Set up the workbench (verify tools and directories)
+	@echo "[*] Setting up ClawHub Forge workbench..."
+	@mkdir -p $(SKILLS_DIR) $(TESTS_DIR)
+	@bash $(TOOLS_DIR)/workbench-verify.sh
+	@echo "[+] Setup complete — edit config/.env to configure"
 
 help: ## Show available commands
 	@echo ""
